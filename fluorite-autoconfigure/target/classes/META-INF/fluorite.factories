@@ -1,0 +1,4 @@
+# 自动配置类
+org.zy.fluorite.boot.annotation.EnableAutoConfiguration=\
+org.zy.fluorite.autoconfigure.ioc.BeanPostProcessorAutoConfiguration,\
+org.zy.fluorite.autoconfigure.aop.AopAutoConfiguration

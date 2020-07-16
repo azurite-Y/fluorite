@@ -1,0 +1,12 @@
+# ApplicationContext 初始化器
+org.zy.fluorite.context.interfaces.ApplicationContextInitializer=\
+org.zy.fluorite.context.support.initializer.ContextIdApplicationContextInitializer,\
+org.zy.fluorite.context.support.initializer.DelegatingApplicationContextInitializer,\
+org.zy.fluorite.context.support.initializer.ConfigurationWarningsApplicationContextInitializer
+
+
+# Application 监听器
+org.zy.fluorite.context.event.interfaces.ApplicationListener=\
+org.zy.fluorite.boot.context.event.listener.DelegatingApplicationListener,\
+org.zy.fluorite.boot.context.event.listener.ClasspathLoggingApplicationListener,\
+org.zy.fluorite.boot.context.event.listener.LoggingApplicationListener
