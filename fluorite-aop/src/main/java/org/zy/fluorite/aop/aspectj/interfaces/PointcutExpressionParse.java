@@ -23,8 +23,15 @@ public interface PointcutExpressionParse {
 	 * @param targetClass - 适配Bean的Class对象
 	 * @param aspectJAnnotation - 切面连接点方法的注解包装对象
 	 * @param aspectClass - 切面类
-	 * @param method - 切面方法
-	 * @return 如果适配则返回PointcutMatcher对象，反之则null
+	 * @param method - 切面连接点方法
+	 * @return 返回{@linkplain #PointcutMatcher } 对象表达匹配结果，若匹配成功则返回对象的expire属性为true，反之则为false
 	 */
 	PointcutMatcher parse(Class<?> targetClass , AspectJAnnotation<?>  aspectJAnnotation ,  Class<?> aspectClass , Method method);
+	
+	/**
+	 * 根据切点表达式的语义补正确定要使用的切点匹配器
+	 * @param prefix
+	 * @return
+	 */
+	boolean support(String prefix);
 }

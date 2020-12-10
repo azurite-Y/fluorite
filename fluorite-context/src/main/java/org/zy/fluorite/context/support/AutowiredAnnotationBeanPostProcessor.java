@@ -70,6 +70,11 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 	/** 注入元数据缓存 【注入目标属性名 : 注入属性】 */
 	private final Map<String, InjectionMetadata> injectionMetadataCache = new ConcurrentHashMap<>(256);
 
+	
+	public AutowiredAnnotationBeanPostProcessor() {
+		super();
+	}
+
 	public AutowiredAnnotationBeanPostProcessor(ConfigurableEnvironment environment) {
 		// this.autowiredAnnotationTypes.add(Autowired.class);
 		// this.autowiredAnnotationTypes.add(Value.class);

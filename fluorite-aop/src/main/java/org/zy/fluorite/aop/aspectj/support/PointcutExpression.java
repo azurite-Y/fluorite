@@ -10,8 +10,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zy.fluorite.aop.aspectj.annotation.Pointcut;
+import org.zy.fluorite.aop.aspectj.expression.PointcutExpressionParseStrategy;
 import org.zy.fluorite.aop.aspectj.interfaces.PointcutExpressionParse;
 import org.zy.fluorite.aop.aspectj.support.AbstractAspectJAdvisorFactory.AspectJAnnotation;
+import org.zy.fluorite.aop.exception.AopInvocationException;
 import org.zy.fluorite.core.utils.Assert;
 import org.zy.fluorite.core.utils.DebugUtils;
 import org.zy.fluorite.core.utils.PropertiesUtils;
@@ -39,7 +41,7 @@ public final class PointcutExpression {
 	}
 	private static PointcutExpression INSTANCE;
 	
-	private static PointcutExpressionParse expressionParse;
+	private static PointcutExpressionParseStrategy expressionParseStrategy;
 	
 	/**
 	 * {@linkplain PointcutExpressionParse }和{@linkplain PointcutExpression }实例。<br/>
@@ -49,19 +51,17 @@ public final class PointcutExpression {
 	 * @return
 	 */
 	public static PointcutExpression buildPointcutExpression(ClassLoader pointcutClassLoader) {
-		if (expressionParse == null) {
+		if (expressionParseStrategy == null) {
 			URL url = ClassLoader.getSystemResource("fluorite.factories");
-			if (url == null) {
-				expressionParse = new DefaultPointcutExpressionParse();
-			}else {
+			expressionParseStrategy = new PointcutExpressionParseStrategy();
+			if (url != null) { // 用户自定义配置生效
 				try {
-					Properties load = PropertiesUtils.load(url.openStream(),false);
+					Properties load = PropertiesUtils.load(url.openStream(), false);
 					String property = load.getProperty(PointcutExpressionParse.PROPERTY_KEY);
 					if (property != null) {
 						Class<?> forName = ReflectionUtils.forName(property);
-						expressionParse = (PointcutExpressionParse) ReflectionUtils.instantiateClass(forName);
-					} else {
-						expressionParse = new DefaultPointcutExpressionParse();
+						expressionParseStrategy.addPointcutExpressionParse(
+								(PointcutExpressionParse) ReflectionUtils.instantiateClass(forName));
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -119,9 +119,9 @@ public final class PointcutExpression {
 				cacheKey = getCacheKey(aspectJPointcutMethod, targetClass);
 				PointcutMatcher falg = this.parseResultCache.get(cacheKey);
 				if (falg != null) {
-//					DebugUtils.logFromAop(logger, "缓存的切面匹配结果：["+!falg.isExpire()+"]"+"，by aspectClass："+aspectClass.toString()+"，targetClass："+targetClass.getSimpleName()
+//					DebugUtils.logFromAop(logger, "缓存的切面匹配结果：["+falg.isExpire()+"]"+"，by aspectClass："+aspectClass.toString()+"，targetClass："+targetClass.getSimpleName()
 //						+"，aspectMethod："+adviceMethod.getName()+"，on expression："+expression);
-					return !falg.isExpire();
+					return falg.isExpire();
 				}
 				
 				// 执行到此都没有返回则代表需判断切面与当前Bean是否适配，则在此获得之前缓存的连接点注解对象
@@ -147,16 +147,25 @@ public final class PointcutExpression {
 				return !falg.isExpire();
 			}
 		}
-		PointcutMatcher parse = expressionParse.parse(targetClass, aspectJoinPointcutAnnotation, aspectClass, aspectJPointcutMethod);
-		cacheKey = (cacheKey == null ? getCacheKey(aspectJPointcutMethod, targetClass) :  cacheKey);
-		this.parseResultCache.put(cacheKey, parse);
-		if (!parse.isExpire()) {
-			DebugUtils.logFromAop(logger, "找到的适配切面："+aspectClass.toString() +"，织入范围："
-					+ (parse.isMatcherMethods() ? "所有方法" :   "单个方法-["+parse.getPointcutMethod().toString()+"]")  +"，by："+targetClass.toString());
-			return true;
+		// 从连接点注解中获得语义补正
+		String prefix = aspectJoinPointcutAnnotation.getAnnotationValue("prefix",String.class);
+		// 获得适配的切点匹配器
+		PointcutExpressionParse expressionParse = expressionParseStrategy.support(prefix);
+		if (expressionParse != null) {
+			PointcutMatcher parse = expressionParse.parse(targetClass, aspectJoinPointcutAnnotation, aspectClass, aspectJPointcutMethod);
+			cacheKey = (cacheKey == null ? getCacheKey(aspectJPointcutMethod, targetClass) :  cacheKey);
+			this.parseResultCache.put(cacheKey, parse);
+//			DebugUtils.logFromAop(logger, "缓存的切面匹配结果：["+false+"]"+"，by aspectClass："+aspectClass.toString()+"，targetClass："+targetClass.getSimpleName()
+//				+"，aspectMethod："+adviceMethod.getName()+"，on expression："+expression);
+			if (parse.isExpire()) {
+				DebugUtils.logFromAop(logger, "找到的适配切面："+aspectClass.toString() +"，织入范围："
+						+ (parse.isMatcherMethods() ? "所有方法" : "方法集-["+parse.getPointcutMethods()+"]") +"，by："+targetClass.toString());
+				return true;
+			}
+		} else {
+			throw new AopInvocationException("无效的切点表达式语义补正，by:"+prefix);
 		}
-//		DebugUtils.logFromAop(logger, "缓存的切面匹配结果：["+false+"]"+"，by aspectClass："+aspectClass.toString()+"，targetClass："+targetClass.getSimpleName()
-//			+"，aspectMethod："+adviceMethod.getName()+"，on expression："+expression);
+
 		return false;
 	}
 	
@@ -197,8 +206,8 @@ public final class PointcutExpression {
 			pointcutMatcher = this.parseResultCache.get(cacheKey);
 		}
 		
-		if (!pointcutMatcher.isExpire()) {
-			if (pointcutMatcher.isMatcherMethods() || pointcutMatcher.getPointcutMethod().equals(method)) {
+		if (pointcutMatcher.isExpire()) {
+			if (pointcutMatcher.isMatcherMethods() || pointcutMatcher.getPointcutMethods().contains(method)) {
 				return true;
 			}
 		}
