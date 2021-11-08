@@ -22,6 +22,12 @@
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.zy.fluorite</groupId>
+			<artifactId>fluorite-tx</artifactId>
+			<version>1.0.0.RELEASE</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 		</dependency>
