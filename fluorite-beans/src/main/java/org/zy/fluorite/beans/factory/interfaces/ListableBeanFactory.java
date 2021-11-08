@@ -86,7 +86,7 @@ public interface ListableBeanFactory  extends BeanFactory{
 	Map<String, Object> getBeansWithAnnotation(Class<? extends Annotation> annotationType) throws BeansException;
 
 	/**
-	 * 在指定的be an上查找annotationType注释，如果在给定的类本身上找不到注释，则遍历其接口和超级类，并检查bean的工厂方法（如果有）。
+	 * 在指定的bean上查找annotationType注释，如果在给定的类本身上找不到注释，则遍历其接口和超级类，并检查bean的工厂方法（如果有）。
 	 */
 	<A extends Annotation> A findAnnotationOnBean(String beanName, Class<A> annotationType)
 			throws NoSuchBeanDefinitionException;

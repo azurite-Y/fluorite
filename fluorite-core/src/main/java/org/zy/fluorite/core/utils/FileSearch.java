@@ -5,7 +5,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zy.fluorite.core.interfaces.Resource;
 import org.zy.fluorite.core.interfaces.function.InvorkFunction;
 import org.zy.fluorite.core.io.FileSystemResource;
@@ -18,7 +21,7 @@ import org.zy.fluorite.core.io.FileSystemResource;
 * @version 
 */
 public class FileSearch {
-//	private static Logger logger = LoggerFactory.getLogger(FileSearch.class);
+	private final static Logger logger = LoggerFactory.getLogger(FileSearch.class);
 	private static StringBuilder builder = new StringBuilder();
 	private static String PROJECT_ROOT_DIRECTORY;
 
@@ -146,6 +149,47 @@ public class FileSearch {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * 候选路径选择，越靠近项目根目录的级别更高
+	 * @param pathList - 排序结果集
+	 * @param candidate - 候选结果集
+	 */
+	public static void  sortPackagePath(List<String> pathList, Set<String> candidate ) {
+		// 标识是否找到更高级别的路径
+		boolean hight = false;
+		// 最短路径的索引
+		int index = 0;
+		// 存储根据分隔符分割路径后的最短路径数组长度
+		int len = Integer.MAX_VALUE;
+		for (int i = 0; i < pathList.size(); i++) {
+			String element = pathList.get(i);
+			String[] tokenizeToStringArray = StringUtils.tokenizeToStringArray(element, ".",null);
+			if (tokenizeToStringArray.length < len) {
+				index = i;
+				len = tokenizeToStringArray.length;
+				if (hight) { // 意味着找到更高级别的路径，所有放弃之前的选择
+					DebugUtils.log(logger, "找到更高级别的路径，所有放弃之前的选择："+candidate);
+					candidate.clear();
+				}
+				hight = true;
+				candidate.add(element);
+				DebugUtils.log(logger, "更高级别的路径："+element);
+			} else if (tokenizeToStringArray.length == len) {
+				String string = pathList.get(index);
+				if (string == element) {
+					DebugUtils.log(logger, "相同的路径："+element);
+					continue ;
+				} else {
+					DebugUtils.log(logger, "同级别的路径，添加候选："+element);
+					candidate.add(element);
+				}
+			}
+		}
+		candidate.add(pathList.get(index));
+
+		logger.info("包扫描路径最终候选："+candidate);
 	}
 	
 	public static void main(String[] args) {

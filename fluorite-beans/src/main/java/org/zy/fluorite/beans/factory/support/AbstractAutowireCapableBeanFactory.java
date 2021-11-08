@@ -1,6 +1,9 @@
 package org.zy.fluorite.beans.factory.support;
 
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
@@ -28,12 +31,14 @@ import org.zy.fluorite.beans.interfaces.AutowireCandidateResolver;
 import org.zy.fluorite.beans.interfaces.BeanDefinition;
 import org.zy.fluorite.beans.interfaces.PropertyValues;
 import org.zy.fluorite.beans.support.MutablePropertyValues;
+import org.zy.fluorite.beans.support.PropertyValue;
 import org.zy.fluorite.core.convert.PrioritizedParameterNameDiscoverer;
 import org.zy.fluorite.core.convert.ResolvableType;
 import org.zy.fluorite.core.exception.BeansException;
 import org.zy.fluorite.core.interfaces.Aware;
 import org.zy.fluorite.core.interfaces.ParameterNameDiscoverer;
 import org.zy.fluorite.core.interfaces.function.ActiveFunction;
+import org.zy.fluorite.core.interfaces.instantiation.FactoryBean;
 import org.zy.fluorite.core.interfaces.instantiation.InitializingBean;
 import org.zy.fluorite.core.subject.NamedThreadLocal;
 import org.zy.fluorite.core.utils.Assert;
@@ -95,10 +100,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		} catch (Throwable ex) {
 			throw new BeanCreationException("调用bean实例化前的BeanPostProcessor失败，by ：" + beanName, ex);
 		}
-
+	
 		try {
 			Object beanInstance = doCreateBean(beanName, mbd, args);
-			DebugUtils.log(logger, "创建bean实例完成，by bean：" + beanInstance);
+			DebugUtils.log(logger, "创建bean实例完成，by bean：" + beanInstance.getClass().getName());
 			return beanInstance;
 		} catch (BeanCreationException ex) {
 			// 以前检测到的异常，已具有正确的bean创建上下文，或者要传送到DefaultSingletonBeanRegistry的非法singleton状态.
@@ -168,9 +173,6 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		if (super.hasInstantiationAwareBeanPostProcessors) {
 			for (InstantiationAwareBeanPostProcessor ibp : super.instantiationList) {
 				pvs = ibp.postProcessProperties(pvs, bean, beanDefinition);
-				if (pvs == null) {
-					return;
-				}
 			}
 		}
 	}
@@ -424,8 +426,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			try {
 				((InitializingBean) bean).afterPropertiesSet();
 			} catch (Exception e) {
-				logger.warn("调用InitializingBean实现类的 ‘afterPropertiesSet()’方法抛出异常，by bean：" + beanName);
-				e.printStackTrace();
+				throw new BeanCreationException("调用InitializingBean实现类的 ‘afterPropertiesSet()’方法抛出异常，by bean：" + beanName, e);
 			}
 		}
 
@@ -472,32 +473,54 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			return;
 		}
 
-		/**
-		 * 本实现不使用属性编辑器和属性描述符操作属性
-		 */
-//		PropertyValues pvs = (mbd.hasPropertyValues() ? mbd.getPropertyValues() : null);
+		PropertyValues pvs = mbd.getPropertyValues();
+		Object wrappedInstance = bw.getWrappedInstance();
+		
+		PropertyValuesInjection(pvs,wrappedInstance,mbd);
 
-//		MutablePropertyValues newPvs = null;
-//		// 若此bean为根据name或type进行自动注入
-//		switch (mbd.getResolvedAutowireMode()) {
-//			case AutowireUtils.AUTOWIRE_BY_NAME  :
-//				// 拷贝RootBeanDefinition持有的需要注入的属性集，而不直接对其进行修改
-//				newPvs = new MutablePropertyValues(pvs);
-//				autowireByName(beanName, mbd, bw, newPvs);
-//				
-//			case AutowireUtils.AUTOWIRE_BY_TYPE    :
-//				newPvs = new MutablePropertyValues(pvs);
-//				autowireByType(beanName, mbd, bw, newPvs);
-//		}
-//		if (newPvs != null) {
-//			pvs = newPvs;
-//		}
-
-		this.applyBeanPostProcessorsProperties(mbd.getPropertyValues(), bw.getWrappedInstance(), mbd);
-
-		// Spring 在此将PropertyValues对象保存到BeanWarpper实现类中，但本实现不使用PropertyValues进行属性注入
+		this.applyBeanPostProcessorsProperties(pvs, wrappedInstance, mbd);
 	}
 
+	/**
+	 * 
+	 * @param pvs
+	 * @param wrappedInstance
+	 * @param mbd
+	 * @throws ReflectiveOperationException
+	 */
+	private void PropertyValuesInjection(PropertyValues pvs, Object bean, RootBeanDefinition beanDefinition) {
+		String name = null;
+		Object value = null;
+		Class<?> beanClass = beanDefinition.getBeanClass();
+		for (PropertyValue propertyValue : pvs) {
+			name = propertyValue.getName();
+			value = propertyValue.getValue();
+			
+			PropertyDescriptor propertyDescriptor = null;
+			Class<?>[] parameterTypes = null;
+			// 填充属性
+			try {
+				propertyDescriptor = new PropertyDescriptor(name, beanClass);
+				Method writeMethod = propertyDescriptor.getWriteMethod();
+				parameterTypes = writeMethod.getParameterTypes();
+
+				if (null == value) {
+					value = this.getBean(parameterTypes[0]);
+				}
+				value = conversionServiceStrategy.convert(value, parameterTypes[0]);
+				
+				writeMethod.setAccessible(true);
+				writeMethod.invoke(bean,value);
+			} catch (IntrospectionException e) {
+				throw new BeansException("bean属性填充异常，未找到合适的getter或setter方法，by name：" + name + " ,class：" + bean.getClass().getName());
+			} catch (IllegalAccessException | InvocationTargetException e) {
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				throw new BeansException("入参类型[" + value.getClass() + "]与setter方法入参类型[" + parameterTypes[0] + "]不符，",e);
+			}
+		}
+	}
+	
 	protected void invokeAwareMethods(String beanName, Object bean) {
 		if (bean instanceof Aware) {
 			if (bean instanceof BeanNameAware) {
@@ -647,6 +670,28 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 	}
 
+	@SuppressWarnings("null")
+	@Override
+	protected Class<?> getTypeForFactoryBean(String beanName, RootBeanDefinition mbd) {
+		synchronized (getSingletonMutex()) {
+			BeanWrapper beanWrapper = this.factoryBeanInstanceCache.get(beanName);
+			if (beanWrapper != null) {
+				return ((FactoryBean<?>)beanWrapper.getWrappedInstance()).getObjectType();
+			}
+			Object beanInstance = getSingleton(beanName);
+			if (beanInstance instanceof FactoryBean) {
+				return ((FactoryBean<?>) beanInstance).getObjectType();
+			}
+			
+			beanWrapper =  this.createBeanInstance(beanName, mbd, null);			
+			Assert.notNull(beanWrapper,"'beanWrapper'不能为null");
+			this.factoryBeanInstanceCache.put(beanName, beanWrapper);
+			return ((FactoryBean<?>)beanWrapper.getWrappedInstance()).getObjectType();
+		}
+		
+		
+	}
+	
 	protected InstantiationStrategy getInstantiationStrategy() {
 		return this.instantiationStrategy;
 	}

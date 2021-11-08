@@ -101,6 +101,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport	imp
 			if (Assert.hasText(beanName)) {
 				this.targetSourcedBeans.add(beanName);
 			}
+
 			Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(beanClass, beanName, targetSource);
 			Object proxy = createProxy(beanClass, beanName, specificInterceptors, targetSource);
 			this.proxyTypes.put(cacheKey, proxy.getClass());
@@ -202,8 +203,6 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport	imp
 			this.proxyTypes.put(cacheKey, proxy.getClass());
 			return proxy;
 		}
-
-		this.advisedBeans.put(cacheKey, false);
 		return bean;
 	}
 	

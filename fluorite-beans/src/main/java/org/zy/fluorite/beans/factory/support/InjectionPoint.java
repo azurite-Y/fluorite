@@ -17,17 +17,21 @@ import org.zy.fluorite.core.utils.Assert;
  * @Description 注入成员的简单描述符，指向方法、构造函数或字段
  */
 public class InjectionPoint {
-
 	protected ExecutableParameter executableParameter;
 
 	protected Field field;
 
 	private volatile Annotation[] fieldAnnotations;
 
+	/**
+	 * 当前注入参数的索引下标
+	 */
+	private int index;
 
-	public InjectionPoint(ExecutableParameter executableParameter) {
+	public InjectionPoint(ExecutableParameter executableParameter,int index) {
 		Assert.notNull(executableParameter, "MethodParameter不能为null");
 		this.executableParameter = executableParameter;
+		this.index = index;
 	}
 
 	public InjectionPoint(Field field) {
@@ -83,9 +87,10 @@ public class InjectionPoint {
 
 	/**
 	 * 返回由基础字段或方法/构造函数参数声明的类型，指带注入类型
+	 * @param parameIndex - 获取参数的下标索引
 	 */
 	public Class<?> getDependencyType() {
-		return (this.field != null ? this.field.getType() : this.executableParameter.getParameterType());
+		return (this.field != null ? this.field.getType() : this.executableParameter.getParameterType(index));
 	}
 
 	public void initParameterNameDiscovery(ParameterNameDiscoverer parameterNameDiscoverer) {

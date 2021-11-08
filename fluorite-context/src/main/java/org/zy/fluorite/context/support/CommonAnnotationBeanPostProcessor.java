@@ -249,7 +249,7 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 			if (this.isField) {
 				return new LookupDependencyDescriptor((Field) this.member, this.lookupType);
 			} else {
-				return new LookupDependencyDescriptor((Method) this.member, this.lookupType);
+				return new LookupDependencyDescriptor((Method) this.member, 0, this.lookupType);
 			}
 		}
 	}
@@ -313,8 +313,8 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 			this.lookupType = lookupType;
 		}
 
-		public LookupDependencyDescriptor(Method method, Class<?> lookupType) {
-			super(new ExecutableParameter(method, 0), true);
+		public LookupDependencyDescriptor(Method method, int index,Class<?> lookupType) {
+			super(new ExecutableParameter(method),index, true);
 			this.lookupType = lookupType;
 		}
 

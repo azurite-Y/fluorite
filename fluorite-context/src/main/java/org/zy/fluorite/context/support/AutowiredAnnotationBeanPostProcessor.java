@@ -504,7 +504,7 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 				Assert.isTrue(beanFactory != null, "没有可用的BeanFactory实现");
 				for (int i = 0; i < argumentCount; i++) {
 					ExecutableParameter executableParameter = new ExecutableParameter(method, i);
-					DependencyDescriptor desc = new DependencyDescriptor(executableParameter, this.required);
+					DependencyDescriptor desc = new DependencyDescriptor(executableParameter, autowiredBeans.size(), this.required);
 					descriptors[i] = desc;
 					try {
 						// 若解析过程中无法找到合适的依赖项且此方法标注的@Autowried的required属性为true则抛出解析BeanNotOfRequiredTypeException
@@ -575,11 +575,11 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 			this.requiredType = original.getDependencyType();
 		}
 
-		public ShortcutDependencyDescriptor(ExecutableParameter executableParameter, String beanName,
+		public ShortcutDependencyDescriptor(ExecutableParameter executableParameter, int index, String beanName,
 				boolean required) {
-			super(executableParameter, required);
+			super(executableParameter,index,required);
 			this.shortcut = beanName;
-			this.requiredType = executableParameter.getParameterType();
+			this.requiredType = executableParameter.getParameterType(index);
 		}
 
 		@Override

@@ -15,10 +15,8 @@ import org.zy.fluorite.core.environment.interfaces.ConfigurableEnvironment;
  */
 @Import(ImportRegistyBeanPostProcessor.class)
 public class BeanPostProcessorAutoConfiguration {
-
 	@Bean
 	public AutowiredAnnotationBeanPostProcessor createAutowiredAnnotationBeanPostProcessor(ConfigurableEnvironment environment) {
 		return new AutowiredAnnotationBeanPostProcessor(environment);
 	}
-
 }

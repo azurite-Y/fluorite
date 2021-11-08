@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.zy.fluorite.core.convert.EveryToStringConvertService;
 import org.zy.fluorite.core.convert.NumberToNumberConvertService;
+import org.zy.fluorite.core.convert.StringToClassConvertService;
 import org.zy.fluorite.core.convert.StringToListConvertService;
 import org.zy.fluorite.core.convert.StringToNumberConverterService;
 import org.zy.fluorite.core.exception.TypeMismatchException;
@@ -23,6 +24,7 @@ public class TypeConvertUtils {
 		converts.add(new NumberToNumberConvertService());
 		converts.add(new StringToNumberConverterService());
 		converts.add(new StringToListConvertService());
+		converts.add(new StringToClassConvertService());
 		converts.add(new EveryToStringConvertService());
 	}
 	
@@ -39,6 +41,10 @@ public class TypeConvertUtils {
 	@SuppressWarnings("unchecked")
 	public static <T> T convert(Object obj, Class<T> clz) throws Exception {
 		Class<?> objClz = obj.getClass();
+		if (clz.isInstance(obj)) {
+			return (T)obj;
+		}
+		
 		for (ConversionService<?,?> conversionService : converts) {
 			if (conversionService.canConvert(objClz, clz)) {
 				return (T) conversionService.convert(obj, clz);

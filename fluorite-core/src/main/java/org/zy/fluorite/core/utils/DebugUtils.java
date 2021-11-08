@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 public final class DebugUtils {
 	public static boolean debug;
 	public static boolean debugFromAop;
+	public static boolean debugFromTransaction;
 	
 	/**
 	 * 若附加条件成立且可现实Debug信息则打印日志
@@ -48,7 +49,7 @@ public final class DebugUtils {
 	}
 
 	/**
-	 * 若可显示Aop相关的Debug信息则打印日志
+	 * 若可显示IOC相关的Debug信息则打印日志
 	 * @param logger
 	 * @param flag
 	 * @param message
@@ -58,7 +59,6 @@ public final class DebugUtils {
 	}
 	
 	// --------------------------------------------------------------
-	
 	/**
 	 * 若附加条件成立且可显示Debug信息则打印日志
 	 * 
@@ -101,5 +101,50 @@ public final class DebugUtils {
 	 */
 	public static void logFromAop(Logger logger, boolean flag, String message) {
 		if (debugFromAop && flag)	logger.info(message);
+	}
+	
+	// --------------------------------------------------------------
+	/**
+	 * 若附加条件成立且可显示Debug信息则打印日志
+	 * 
+	 * @param logger
+	 * @param flag - 附加条件
+	 * @param message
+	 */
+	public static void logFromTransaction(Logger logger, boolean flag, Supplier<String> messageSupplier) {
+		logFromTransaction(logger, flag, messageSupplier.get());
+	}
+
+	/**
+	 * 若可显示Debug信息则打印日志
+	 * 
+	 * @param logger
+	 * @param flag
+	 * @param message
+	 */
+	public static void logFromTransaction(Logger logger, Supplier<String> messageSupplier) {
+		logFromTransaction(logger, messageSupplier.get());
+	}
+	
+	/**
+	 * 若可显示Debug信息则打印日志
+	 * 
+	 * @param logger
+	 * @param flag
+	 * @param message
+	 */
+	public static void logFromTransaction(Logger logger, String message) {
+		if (debugFromTransaction) 	logger.info(message);
+	}
+
+	/**
+	 * 若附加条件成立且可现实Transaction相关的Debug信息则打印日志
+	 * 
+	 * @param logger
+	 * @param flag
+	 * @param message
+	 */
+	public static void logFromTransaction(Logger logger, boolean flag, String message) {
+		if (debugFromTransaction && flag)	logger.info(message);
 	}
 }

@@ -1,0 +1,38 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.zy.fluorite</groupId>
+		<artifactId>fluorite</artifactId>
+		<version>1.0.0.RELEASE</version>
+	</parent>
+	<artifactId>fluorite-tx</artifactId>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.zy.fluorite</groupId>
+			<artifactId>fluorite-context</artifactId>
+			<version>1.0.0.RELEASE</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>druid</artifactId>
+			<optional>true</optional>
+			<version>1.1.10</version>
+		</dependency>
+		<dependency>
+			<groupId>com.zaxxer</groupId>
+			<artifactId>HikariCP</artifactId>
+			<optional>true</optional>
+			<version>2.7.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-dbcp2</artifactId>
+			<optional>true</optional>
+			<version>2.1.1</version>
+		</dependency>
+	</dependencies>
+</project>

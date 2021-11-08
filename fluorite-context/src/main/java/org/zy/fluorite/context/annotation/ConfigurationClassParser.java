@@ -21,7 +21,6 @@ import org.zy.fluorite.beans.factory.support.BeanMethod;
 import org.zy.fluorite.beans.factory.support.SourceClass;
 import org.zy.fluorite.beans.interfaces.BeanDefinition;
 import org.zy.fluorite.beans.support.AnnotationAwareOrderComparator;
-import org.zy.fluorite.beans.support.AnnotationMetadataHolder;
 import org.zy.fluorite.context.annotation.interfaces.ConfigurationCondition.ConfigurationPhase;
 import org.zy.fluorite.context.annotation.interfaces.DeferredImportSelector;
 import org.zy.fluorite.context.annotation.interfaces.ImportBeanDefinitionRegistrar;
@@ -403,7 +402,7 @@ public class ConfigurationClassParser {
 					ImportBeanDefinitionRegistrar registrar = (ImportBeanDefinitionRegistrar) ReflectionUtils
 							.instantiateClass(importClass);
 					// 将此导入类实例和根类的注解信息映射保存到当前ConfigurationClass的importBeanDefinitionRegistrars容器中
-					configClass.addImportBeanDefinitionRegistrar(registrar, new AnnotationMetadataHolder(importClass));
+					configClass.addImportBeanDefinitionRegistrar(registrar, configClass.getAnnotationMetadata());
 				} else {
 					/**
 					 * 候选类不是ImportSelector或ImportBeanDefinitionRegistrar->将其作为@Configuration类处理
@@ -444,13 +443,16 @@ public class ConfigurationClassParser {
 	 */
 	private Set<SourceClass> collectImports(SourceClass source, Set<SourceClass> imports, Set<SourceClass> visited) {
 		if (visited.add(source)) {
-			Import im = source.getAnnotationMetadata().getAnnotationForClass(Import.class);
-			if (im != null) {
-				for (Class<?> clz : im.value()) {
-					SourceClass sourceClass = new SourceClass(clz);
-					DebugUtils.log(logger, source.getName() + " 导入：" + clz.getName());
-					imports.add(sourceClass);
-					collectImports(sourceClass, imports, visited);
+			List<Import> importList = source.getAnnotationMetadata().getAnnotationListForClass(Import.class);
+			if (importList != null) {
+				for (Import im : importList) {
+					for (Class<?> clz : im.value()) {
+						SourceClass sourceClass = new SourceClass(clz);
+						DebugUtils.log(logger, source.getName() + " 导入：" + clz.getName());
+						imports.add(sourceClass);
+						// 不在此处解析导入类逻辑，改为解析@Import注解标注类时解析导入关系，避免a导入b，b导入c而判定c被循环导入的问题
+//						collectImports(sourceClass, imports, visited);
+					}
 				}
 			}
 		}

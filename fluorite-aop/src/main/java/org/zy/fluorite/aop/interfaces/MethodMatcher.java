@@ -7,8 +7,9 @@ import org.zy.fluorite.aop.support.TrueMethodMatcher;
 /**
  * @DateTime 2020年7月5日 下午2:49:09;
  * @author zy(azurite-Y);
- * @Description 检查目标方法是否有资格获得advice
+ * @Description 检查目标方法是否有资格获得advice，其职能被 PointcutExpression 类所取代
  */
+@Deprecated
 public interface MethodMatcher {
 	/**
 	 * 判断此方法是否是静态的

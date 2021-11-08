@@ -2,6 +2,8 @@ package org.zy.fluorite.core.utils;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * @author: zy(azurite-Y);
@@ -83,5 +85,26 @@ public class ObjectUtils {
 			newArray[i] = Array.get(source, i);
 		}
 		return newArray;
+	}
+	
+	/**
+	 * 排除数字类型的基本属性之外,判断指定对象是否是默认值
+	 */
+	public static boolean isDefaultValue(Object obj) {
+		if (obj == null) {
+			return true;
+		}
+		
+		Class<? extends Object> clz = obj.getClass();
+		if (obj != null) {
+			if (Map.class.isAssignableFrom(clz)) {
+				return ((Map<?,?>)obj).isEmpty();
+			} else if (Collection.class.isAssignableFrom(clz)) {
+				return ((Collection<?>)obj).isEmpty();
+			} else if (String.class.isAssignableFrom(clz)) {
+				return ((String)obj).isEmpty();
+			}
+		}
+		return false;
 	}
 }

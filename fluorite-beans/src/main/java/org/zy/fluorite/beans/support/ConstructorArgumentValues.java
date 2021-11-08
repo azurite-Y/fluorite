@@ -64,13 +64,6 @@ public class ConstructorArgumentValues {
 		addOrMergeIndexedArgumentValue(index, newValue);
 	}
 
-	/**
-	 * Add an argument value for the given index in the constructor argument list,
-	 * merging the new value (typically a collection) with the current value
-	 * if demanded: see {@link org.springframework.beans.Mergeable}.
-	 * @param key the index in the constructor argument list
-	 * @param newValue the argument value in the form of a ValueHolder
-	 */
 	private void addOrMergeIndexedArgumentValue(Integer key, ValueHolder newValue) {
 		ValueHolder currentValue = this.indexedArgumentValues.get(key);
 		if (currentValue == null ) {

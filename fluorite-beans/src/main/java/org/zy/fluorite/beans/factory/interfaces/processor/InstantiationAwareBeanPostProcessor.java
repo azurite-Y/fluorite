@@ -34,7 +34,6 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 	
 	/**
 	 * 在工厂将给定的属性值应用于给定bean之前对其进行后处理，而不需要任何属性描述符。直接设置属性值或调用方法
-	 * <p>注：此方法不更改PropertyValues中的任何属性值</p>
 	 * @param pvs
 	 * @param bean
 	 * @param beanName

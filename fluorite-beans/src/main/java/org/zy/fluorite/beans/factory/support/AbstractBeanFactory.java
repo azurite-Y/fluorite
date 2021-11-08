@@ -95,16 +95,6 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	protected final List<MergedBeanDefinitionPostProcessor> mergedList = new CopyOnWriteArrayList<>();
 	protected final List<InstantiationAwareBeanPostProcessor> instantiationList = new CopyOnWriteArrayList<>();
 	protected final List<SmartInstantiationAwareBeanPostProcessor> smartInstantiationList = new CopyOnWriteArrayList<>();
-	
-	// 保证所有类型的后处理器的类型效验
-	@Deprecated
-	protected int destructiotSize ;
-	@Deprecated
-	protected int mergedSize;
-	@Deprecated
-	protected int instantiationSize;
-	@Deprecated
-	protected int smarrtInstantiationSize;
 
 	public AbstractBeanFactory() {
 		super();
@@ -557,8 +547,6 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			this.destructionList.remove(dbp);
 			this.destructionList.add(dbp);
 		}
-		
-		
 	}
 
 	@Override
@@ -725,8 +713,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			
 			if (allowEagerInit) { // 若允许则实例化FactoryBean实例
 				if (isFactoryBean) {
-					beanInstance = getBean(beanName);
-					return typeToMatch.isAssignableFrom(beanInstance.getClass());
+					RootBeanDefinition definition = getBeanDefinition(beanName);
+					return typeToMatch.isAssignableFrom(getTypeForFactoryBean(beanName, definition));
 				}
 			} 
 			Class<?> beanClass = beanDefinition.getBeanClass();
@@ -755,4 +743,13 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 //	public void setEnvironment(ConfigurableEnvironment environment) {
 //		this.environment = environment;
 //	}
+
+	/**
+	 * 创建FactoryBean实现的实例化对象，获得其创建对象的类型
+	 * @param beanName
+	 * @param mbd
+	 * @param allowInit
+	 * @return
+	 */
+	protected abstract Class<?> getTypeForFactoryBean(String beanName, RootBeanDefinition mbd);
 }

@@ -234,7 +234,7 @@ public class ConstructorResolver {
 
 	private Object instantiate(String beanName, RootBeanDefinition mbd, Constructor<?> cots, Object[] args) {
 		return this.beanFactory.getInstantiationStrategy().instantiate(mbd, beanName,
-				this.beanFactory.parentBeanFactory, cots, EMPTY_ARGS);
+				this.beanFactory.parentBeanFactory, cots, args);
 	}
 
 	public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd, Constructor<?>[] ctors,
@@ -276,15 +276,13 @@ public class ConstructorResolver {
 
 			// 是否需要解析构造器.
 			boolean autowiring = (ctors != null || mbd.getResolvedAutowireMode() == AutowireUtils.AUTOWIRE_CONSTRUCTOR);
-			ConstructorArgumentValues resolvedValues = null;
-
+			ConstructorArgumentValues cargs = null;
 			// 构造器所需参数的最小个数
 			int minNrOfArgs;
 			if (args != null) {
 				minNrOfArgs = args.length;
 			} else {
-				ConstructorArgumentValues cargs = mbd.getConstructorArgumentValues();
-				resolvedValues = new ConstructorArgumentValues();
+				cargs = mbd.getConstructorArgumentValues();
 				// 确定最小参数个数
 				minNrOfArgs = cargs.getArgumentCount();
 			}
@@ -302,7 +300,7 @@ public class ConstructorResolver {
 				ArgumentsHolder argsHolder;
 				// 获得当前候选构造器的参数类型集合
 				Class<?>[] paramTypes = candidate.getParameterTypes();
-				if (resolvedValues != null) {
+				if (!cargs.isEmpty()) {
 					// 检查当前构造器上是否标注@ConstructorProperties注解，标注则返回value值
 					String[] paramNames = ConstructorPropertiesChecker.evaluate(candidate, parameterCount);
 					if (paramNames == null) {
@@ -312,7 +310,7 @@ public class ConstructorResolver {
 							paramNames = pnd.getParameterNames(candidate);
 						}
 					}
-					argsHolder = createArgumentArray(beanName, mbd, resolvedValues, bw, paramTypes, paramNames,
+					argsHolder = createArgumentArray(beanName, mbd, cargs, bw, paramTypes, paramNames,
 							getUserDeclaredConstructor(candidate), autowiring);
 				} else {
 					// 给定的显式参数->参数长度必须完全匹配
@@ -324,6 +322,7 @@ public class ConstructorResolver {
 
 				if (argsHolder != null && argsHolder.arguments.length > 0) {
 					argsHolderToUse = argsHolder;
+					constructorToUse = candidate;
 					// 找到合适的参数值之后结束当前循环
 					break;
 				}
@@ -333,8 +332,8 @@ public class ConstructorResolver {
 				argsHolderToUse.storeCache(mbd, constructorToUse);
 			}
 		}
-
-		Assert.isTrue(argsToUse != null, "未解析的构造函数参数");
+		
+		argsToUse = argsHolderToUse.resolveNecessary ? argsHolderToUse.arguments : argsHolderToUse.rawArguments ;
 		bw.setBeanInstance(instantiate(beanName, mbd, constructorToUse, argsToUse));
 		return bw;
 	}
@@ -429,7 +428,7 @@ public class ConstructorResolver {
 
 	protected Object resolveAutowiredArgument(ExecutableParameter param, String beanName,
 			Set<String> autowiredBeanNames) {
-		if (InjectionPoint.class.isAssignableFrom(param.getParameterType())) {
+		if (InjectionPoint.class.isAssignableFrom(param.getParameterType(autowiredBeanNames.size()))) {
 			InjectionPoint injectionPoint = currentInjectionPoint.get();
 			if (injectionPoint == null) {
 				throw new IllegalStateException("当前没有可用的注入点： " + param);
@@ -440,7 +439,7 @@ public class ConstructorResolver {
 		 * DependencyDescriptor为InjectionPoint的子类，即将注入的特定依赖项的描述符。
 		 * 包装构造函数参数、方法参数或字段，允许对其元数据进行统一访问。
 		 */
-		return this.beanFactory.resolveDependency(new DependencyDescriptor(param, true), beanName, autowiredBeanNames);
+		return this.beanFactory.resolveDependency(new DependencyDescriptor(param,autowiredBeanNames.size(), true), beanName, autowiredBeanNames);
 	}
 
 	/**

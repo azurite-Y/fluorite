@@ -87,7 +87,7 @@ public class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyCreator {
 		for (String name : advisorNames) {
 			if (isEligibleBean(name)) {
 				if (this.beanFactory.isCurrentlyInCreation(name)) {
-					logger.info("跳过正在创建的Advisor："+name);
+//					DebugUtils.logFromAop(logger, "跳过正在创建的Advisor：" + name);
 				} else {
 					try {
 						advisors.add(this.beanFactory.getBean(name, Advisor.class));

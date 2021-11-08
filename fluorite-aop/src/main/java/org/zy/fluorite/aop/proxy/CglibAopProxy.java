@@ -404,10 +404,10 @@ public class CglibAopProxy implements AopProxy, Serializable {
 				}
 				Class<?> returnType = method.getReturnType();
 				if (targetClass != null && returnType.isAssignableFrom(targetClass)) {
-					DebugUtils.log(logger, "StaticUnadvisedInterceptor类处理的代理方法[返回它自身]："+method.toString());
+					DebugUtils.logFromAop(logger, "StaticUnadvisedInterceptor类处理的代理方法[返回它自身]："+method.toString());
 					return INVOKE_TARGET;
 				} else {
-					DebugUtils.log(logger, "StaticDispatcher类处理的代理方法[不返回它自身]："+method.toString());
+					DebugUtils.logFromAop(logger, "StaticDispatcher类处理的代理方法[不返回它自身]："+method.toString());
 					return DISPATCH_TARGET;
 				}
 			}

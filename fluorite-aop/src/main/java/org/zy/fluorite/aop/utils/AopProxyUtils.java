@@ -14,6 +14,7 @@ import org.zy.fluorite.aop.target.SingletonTargetSource;
 import org.zy.fluorite.beans.factory.interfaces.ConfigurableListableBeanFactory;
 import org.zy.fluorite.beans.interfaces.BeanDefinition;
 import org.zy.fluorite.core.utils.Assert;
+import org.zy.fluorite.core.utils.ClassUtils;
 import org.zy.fluorite.core.utils.StringUtils;
 
 /**
@@ -79,7 +80,7 @@ public class AopProxyUtils {
 				if (targetClass.isInterface()) { // 代理类是接口则添加到接口集中
 					advised.setInterfaces(targetClass);
 				} else if (Proxy.isProxyClass(targetClass)) { // 代理类通过jdk动态代理生成则获取其实现接口并添加到接口集中
-					advised.setInterfaces(targetClass.getInterfaces());
+					advised.setInterfaces(ClassUtils.getAllInterfacesAsArray(targetClass));
 				}
 				// 设置找到的接口集
 				specifiedInterfaces = advised.getProxiedInterfaces();

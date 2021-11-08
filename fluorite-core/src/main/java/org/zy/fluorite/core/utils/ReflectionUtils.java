@@ -1,5 +1,6 @@
 package org.zy.fluorite.core.utils;
 
+import java.beans.IntrospectionException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
@@ -27,22 +28,25 @@ public class ReflectionUtils {
 
 	// 数组容器转换标识
 	public static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
-	
+
 	public static final Constructor<?>[] EMPTY_CONSTRUCTOR_ARRAY = new Constructor<?>[0];
-	
+
 	public static final Method[] EMPTY_METHOD_ARRAY = new Method[0];
-	
+
 	public static final Field[] EMPTY_FIELD_ARRAY = new Field[0];
-	
+
 	public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
-	
-	
+
+	public static final String GET_PREFIX = "get";
+	public static final String SET_PREFIX = "set";
+	public static final String IS_PREFIX = "is";
+
 	/** 过滤桥接方法和编译器引入的方法 */
 	public static final MatcherFilter<Method> USER_DECLARED_METHODS =	(method -> !method.isBridge() && !method.isSynthetic());
-	
+
 	/** 过滤编译器引入的属性 */
 	public static final MatcherFilter<Field> USER_DECLARED_FFIELD =	(field -> !field.isSynthetic());
-	
+
 	/**
 	 * 反射创建指定值的Class对象
 	 * 
@@ -114,7 +118,7 @@ public class ReflectionUtils {
 	public static void doWithLocalMethods(Class<?> clz, ForEachCallback<Method> callback) {
 		doWithLocalMethods(clz,callback,USER_DECLARED_METHODS);
 	}
-	
+
 	/**
 	 * 迭代指定Class所定义的全部Method对象，且指定方法过滤逻辑
 	 * @param clz
@@ -129,7 +133,7 @@ public class ReflectionUtils {
 			callback.action(method);
 		}
 	}
-	
+
 	/**
 	 * 迭代指定类所定义的全部Field对象，且使用默认的方法过滤逻辑
 	 * @param clz
@@ -138,7 +142,7 @@ public class ReflectionUtils {
 	public static void doWithLocalFields(Class<?> clz,  ForEachCallback<Field> callback) {
 		doWithLocalFields(clz,callback ,USER_DECLARED_FFIELD);
 	}
-	
+
 	/**
 	 * 迭代指定类所定义的全部Field对象
 	 * @param clz
@@ -165,7 +169,7 @@ public class ReflectionUtils {
 			callback.action(constructor);
 		}
 	}
-	
+
 	public static Object invokeMethod(Object obj, Method method ,Object... args) {
 		try {
 			makeAccessible(method);
@@ -175,7 +179,7 @@ public class ReflectionUtils {
 		} 
 		return null;
 	}
-	
+
 	/**
 	 * 通过Class对象获得其实例
 	 * @param <T>
@@ -207,7 +211,7 @@ public class ReflectionUtils {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * 批量生成Class对象
 	 * @param importClassNames
@@ -235,7 +239,7 @@ public class ReflectionUtils {
 		}
 		return set;
 	}
-	
+
 	@FunctionalInterface
 	public interface MatcherFilter<T> {
 
@@ -264,10 +268,40 @@ public class ReflectionUtils {
 		doWithLocalMethods(clz, list::add);
 		return list;
 	}
-	
+
 	/** 获得指定类所定义的方法并存储于Method数组中，使用默认的方法过滤逻辑 */
 	public static Method[] doWithLocalMethodsToArray(Class<?> clz) {
 		List<Method> localMethodsToList = doWithLocalMethodsToList(clz);
 		return localMethodsToList.toArray(EMPTY_METHOD_ARRAY);
+	}
+
+	/**
+	 * 获得getter方法，boolean 属性的getter方法名为 isXxxx
+	 * @return 
+	 * @throws IntrospectionException 
+	 * @throws SecurityException 
+	 * @throws NoSuchMethodException 
+	 */
+	@SuppressWarnings("all")
+	public static Method findGetterMethod(String propertyName, Class<?> beanClass,Class<?> propretyClass) throws IntrospectionException, NoSuchMethodException, SecurityException {
+		String prefix =  Boolean.class.isAssignableFrom(propretyClass) || boolean.class.isAssignableFrom(propretyClass)  ? IS_PREFIX : GET_PREFIX;
+		String capitalize = StringUtils.capitalize(propertyName);
+		return beanClass.getMethod(prefix + capitalize, null);
+	}
+
+	/**
+	 * 获得setter方法
+	 * @param propertyName
+	 * @param beanClass
+	 * @param propretyClass
+	 * @return
+	 * @throws IntrospectionException
+	 * @throws SecurityException 
+	 * @throws NoSuchMethodException 
+	 */
+	@SuppressWarnings("all")
+	public static Method findsetterMethod(String propertyName, Class<?> beanClass,Class<?> propretyClass) throws IntrospectionException, NoSuchMethodException, SecurityException {
+		String capitalize = StringUtils.capitalize(propertyName);
+		return beanClass.getMethod(SET_PREFIX + capitalize, null);
 	}
 }

@@ -44,7 +44,6 @@ import org.zy.fluorite.core.utils.DebugUtils;
 import org.zy.fluorite.core.utils.FileSearch;
 import org.zy.fluorite.core.utils.IOUtils;
 import org.zy.fluorite.core.utils.ReflectionUtils;
-import org.zy.fluorite.core.utils.StringUtils;
 
 /**
  * @DateTime 2020年6月21日 下午3:55:46;
@@ -53,36 +52,36 @@ import org.zy.fluorite.core.utils.StringUtils;
  */
 public class ComponentScanAnnotationParser {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-	
+
 	private final Environment environment;
 	private final BeanNameGenerator beanNameGenerator;
 	private final BeanDefinitionRegistry registry;
-	
+
 	private ComponentDefinition  componentDefinition;
-	
+
 	/**  TypeFilter实现类调用策略 */
 	private TypeFilterStrategy typeFilterStrategy = new TypeFilterStrategy();
 	/** 已实例化的TypeFilter实现类缓存 */
 	private Map<Class<?>, TypeFilterStore> instantiatedTypeFilters = new HashMap<>();
-	
+
 	private String indexPath = "";
-	
+
 	private String indexName = "";
-	
+
 	private boolean isCheck = false;
-	
+
 	/** 是否创建了组件索引文件，为false则未创建 */
 	private boolean createNewFile = false;
-	
+
 	/** 是否读取了组件索引 */
 	private boolean readerFile = false;
-	
+
 	/** 组件索引读取 */
 	private BufferedReader bufferedReader = null;
-	
+
 	/** 组件索引写入 */
 	private BufferedWriter bufferedWriter = null;
-	
+
 	public ComponentScanAnnotationParser(Environment environment, BeanNameGenerator beanNameGenerator,
 			BeanDefinitionRegistry registry) {
 		super();
@@ -104,7 +103,7 @@ public class ComponentScanAnnotationParser {
 		if (this.indexPath.isEmpty()) parseIndexPath();
 		if (! this.isCheck) checkFile();
 	}
-	
+
 	/**
 	 * 判断存储组件索引的File是否存在
 	 */
@@ -167,17 +166,17 @@ public class ComponentScanAnnotationParser {
 			if (builder.length()>0) {
 				builder.delete(0, builder.length());
 			}
-			
+
 			try {
 				String readLine = reader.readLine();
 				String index = readLine.replace(".", "/");
-				
+
 				// 拼接绝对路径名
 				builder.append(rootPath).append(index).append(".").append(this.componentDefinition.getResourcePattern());
-				
+
 				File file = new File(builder.toString());
 				DebugUtils.log(logger, "从组件索引中读取到一个索引，by：["+readLine+"]，是否是一个文件："+file.isFile() +"，by path："+builder.toString());
-				
+
 				FileSystemResource resource = new FileSystemResource(file);
 				resource.setResourceName(readLine);
 				// 设置文件后缀名
@@ -190,7 +189,7 @@ public class ComponentScanAnnotationParser {
 		readerFile = true;
 		return list;
 	}
-	
+
 	private TypeFilter instantiateTypeFilter(Filter filter,Class<? extends TypeFilter> clz) {
 		return instantiateTypeFilter(filter.type(),clz,filter.pattern(),filter.annotations(),filter.source());
 	}
@@ -203,11 +202,11 @@ public class ComponentScanAnnotationParser {
 	 */
 	private TypeFilter instantiateTypeFilter(FilterType type, Class<? extends TypeFilter> clz ,String pattern,Class<? extends Annotation>[] annos,Class<?> source ) {
 		switch (clz.getName()) {
-			case "org.zy.fluorite.core.annotation.filter.AnnotationTypeFilter" : return new AnnotationTypeFilter(CollectionUtils.asSet(annos));
-			case "org.zy.fluorite.core.annotation.filter.RegexPatternTypeFilter" : return new RegexPatternTypeFilter(pattern);
-			case "org.zy.fluorite.core.annotation.filter.AssignableTypeFilter" : return new AssignableTypeFilter(source);
+		case "org.zy.fluorite.core.annotation.filter.AnnotationTypeFilter" : return new AnnotationTypeFilter(CollectionUtils.asSet(annos));
+		case "org.zy.fluorite.core.annotation.filter.RegexPatternTypeFilter" : return new RegexPatternTypeFilter(pattern);
+		case "org.zy.fluorite.core.annotation.filter.AssignableTypeFilter" : return new AssignableTypeFilter(source);
 		}
-		
+
 		return ReflectionUtils.instantiateClass(clz);
 	}
 
@@ -222,17 +221,17 @@ public class ComponentScanAnnotationParser {
 		if (readerFile) { // 只需读取一次组件索引文件即可，在解析第一个@ComponentScan注解之时就会读取并注册为BeanDefinition
 			return beanDefinitions;
 		}
-		
+
 		Set<String> packagePaths = this.getPackagePath(componentScan, source);
-		
+
 		// 存储@ComponentScan注解相关信息
 		componentDefinition = new ComponentDefinition(componentScan,source);
-	
+
 		for (String packagePath : packagePaths) {
 			Set<BeanDefinition> candidates = findCandidateComponents(packagePath);
 			for (BeanDefinition beanDefinition : candidates) {
 				// 解析@Scope注解
-				
+
 				// 解析注解，生成beanName
 				String beanName = this.beanNameGenerator.generateBeanName(beanDefinition, this.registry);
 				beanDefinition.setBeanName(beanName);
@@ -244,133 +243,133 @@ public class ComponentScanAnnotationParser {
 				 * @DependsOn – dependsOn
 				 * @Description - description
 				 * @Qualifier - qualifiedName
-				*/
+				 */
 				BeanUtils.processCommonDefinitionAnnotations(beanDefinition,beanDefinition.getAnnotationMetadata());
-				
+
 				// 暂缓注册，由 ConfigurationClassBeanDefinitionReader 类来处理
-//				this.registry.registerBeanDefinition(beanName, beanDefinition);
-//				Qualifier annotation = beanDefinition.getBeanClass().getAnnotation(Qualifier.class);
-//				if (annotation != null) {
-//					this.registry.registerAlias(beanName, annotation.value());
-//				}
+				//				this.registry.registerBeanDefinition(beanName, beanDefinition);
+				//				Qualifier annotation = beanDefinition.getBeanClass().getAnnotation(Qualifier.class);
+				//				if (annotation != null) {
+				//					this.registry.registerAlias(beanName, annotation.value());
+				//				}
 				beanDefinitions.add(beanDefinition);
 			}
 		}
 		IOUtils.close(this.bufferedReader,this.bufferedWriter);
 		return beanDefinitions;
 	}
-	
+
 	/**
-		 * 指定的路径，获得其路径下的组件信息
-		 * @param componentScan
-		 * @return
-		 */
-		public Set<BeanDefinition> findCandidateComponents(String basePackage) {
-			Set<BeanDefinition> contain = new LinkedHashSet<>(); 
-			
-			List<Resource> componentResources = null;
-			try {
-				// 启动时检测到有组件索引文件时才读取
-				if (!createNewFile) {
-					DebugUtils.log(logger, "读取组件索引，by path："+this.indexPath+this.indexName);
-					componentResources = readComponentIndex();
-				}
-			} catch (IOException e1) {
-				e1.printStackTrace();
+	 * 指定的路径，获得其路径下的组件信息
+	 * @param componentScan
+	 * @return
+	 */
+	public Set<BeanDefinition> findCandidateComponents(String basePackage) {
+		Set<BeanDefinition> contain = new LinkedHashSet<>(); 
+
+		List<Resource> componentResources = null;
+		try {
+			// 启动时检测到有组件索引文件时才读取
+			if (!createNewFile) {
+				DebugUtils.log(logger, "读取组件索引，by path："+this.indexPath+this.indexName);
+				componentResources = readComponentIndex();
 			}
-			if (!Assert.notNull(componentResources)) {
-				componentResources = 	FileSearch.searchToFile(basePackage,this.componentDefinition.getResourcePattern());
-			}
-		
-			Filter[] excludeFilters = this.componentDefinition.getExcludeFilters();
-			for (Filter filter : excludeFilters) {
-				Class<? extends TypeFilter>[] value = filter.value();
-				for (Class<? extends TypeFilter> clz : value) {
-					TypeFilterStore typeFilterStore = this.instantiatedTypeFilters.get(clz);
-					if (typeFilterStore != null) { // 之前已实例化过此类型的对象
-						// 设置当前TypeFilter相关属性。因为每个@Filter的pattern()等方法返回值可能不同
-						typeFilterStore.invorkAware(filter.pattern(), filter.annotations(), filter.source());
-						this.typeFilterStrategy.add(typeFilterStore.getFilterType(), typeFilterStore.getTypeFilter());
-					} else {
-						TypeFilter instantiateClass = instantiateTypeFilter(filter,clz);
-						this.instantiatedTypeFilters.put(clz, new TypeFilterStore(filter,clz,instantiateClass));
-						this.typeFilterStrategy.add(filter.type(), instantiateClass);
-					}
-				}
-			}
-			
-			// 添加默认的TypeFilter逻辑
-	//		this.typeFilterStrategy.add(FilterType.CUSTOM,  new TypeFilter() {
-	//			@Override
-	//			public boolean match(Class<?> clz, Filter filter) {
-	//				return componentDefinition.getSource().getName().equals(clz.getName());
-	//			}
-	//		});
-			
-			// 添加默认的TypeFilter逻辑 忽略注解标注类
-			this.typeFilterStrategy.add(FilterType.CUSTOM , 
-					new AssignableTypeFilter(componentDefinition.getSource()));
-			
-			for (Resource resource : componentResources) {
-				 Class<?> searchClz = ReflectionUtils.forName(resource.getResourceName());
-				 AnnotationMetadataHolder metadataHolder = new AnnotationMetadataHolder(searchClz);
-				if (this.typeFilterStrategy.matcher(resource, metadataHolder)) {
-					// 防止在TypeFilterStrategy运行时未实例化此资源
-					searchClz = (searchClz==null ? ReflectionUtils.forName(resource.getResourceName()) : searchClz );
-					
-					// 判断此类是否标注了@Indexed注解
-					boolean isIndexed = metadataHolder.isAnnotatedForClass(Indexed.class);
-					if (!readerFile && this.componentDefinition.isUseIndexed() && isIndexed) { 
-						// 在第一次创建组件索引文件且 @Component Scan 注解中设置了允许使用组件索引时写入
-					
-						// 在组件索引的每一行写下每一个资源文件的绝对路径
-						if (resource.isFile()) {
-							try {
-								IOUtils.writerFile(bufferedWriter,(writer) -> {
-									try {
-										writer.write("\n");
-									} catch (IOException e) {
-										e.printStackTrace();
-									}
-								} , resource.getResourceName());
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
-						}
-						
-					}
-					
-					RootBeanDefinition rootBeanDefinition = new RootBeanDefinition(searchClz);
-					rootBeanDefinition.setResource(resource);
-					rootBeanDefinition.setAnnotationMetadata(metadataHolder);
-					contain.add(rootBeanDefinition);
-				}
-			}
-			return contain;
+		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
+		if (!Assert.notNull(componentResources)) {
+			componentResources = 	FileSearch.searchToFile(basePackage,this.componentDefinition.getResourcePattern());
+		}
+
+		Filter[] excludeFilters = this.componentDefinition.getExcludeFilters();
+		for (Filter filter : excludeFilters) {
+			Class<? extends TypeFilter>[] value = filter.value();
+			for (Class<? extends TypeFilter> clz : value) {
+				TypeFilterStore typeFilterStore = this.instantiatedTypeFilters.get(clz);
+				if (typeFilterStore != null) { // 之前已实例化过此类型的对象
+					// 设置当前TypeFilter相关属性。因为每个@Filter的pattern()等方法返回值可能不同
+					typeFilterStore.invorkAware(filter.pattern(), filter.annotations(), filter.source());
+					this.typeFilterStrategy.add(typeFilterStore.getFilterType(), typeFilterStore.getTypeFilter());
+				} else {
+					TypeFilter instantiateClass = instantiateTypeFilter(filter,clz);
+					this.instantiatedTypeFilters.put(clz, new TypeFilterStore(filter,clz,instantiateClass));
+					this.typeFilterStrategy.add(filter.type(), instantiateClass);
+				}
+			}
+		}
+
+		// 添加默认的TypeFilter逻辑
+		//		this.typeFilterStrategy.add(FilterType.CUSTOM,  new TypeFilter() {
+		//			@Override
+		//			public boolean match(Class<?> clz, Filter filter) {
+		//				return componentDefinition.getSource().getName().equals(clz.getName());
+		//			}
+		//		});
+
+		// 添加默认的TypeFilter逻辑 忽略注解标注类
+		this.typeFilterStrategy.add(FilterType.CUSTOM , 
+				new AssignableTypeFilter(componentDefinition.getSource()));
+
+		for (Resource resource : componentResources) {
+			Class<?> searchClz = ReflectionUtils.forName(resource.getResourceName());
+			AnnotationMetadataHolder metadataHolder = new AnnotationMetadataHolder(searchClz);
+			if (this.typeFilterStrategy.matcher(resource, metadataHolder)) {
+				// 防止在TypeFilterStrategy运行时未实例化此资源
+				searchClz = (searchClz==null ? ReflectionUtils.forName(resource.getResourceName()) : searchClz );
+
+				// 判断此类是否标注了@Indexed注解
+				boolean isIndexed = metadataHolder.isAnnotatedForClass(Indexed.class);
+				if (!readerFile && this.componentDefinition.isUseIndexed() && isIndexed) { 
+					// 在第一次创建组件索引文件且 @Component Scan 注解中设置了允许使用组件索引时写入
+
+					// 在组件索引的每一行写下每一个资源文件的绝对路径
+					if (resource.isFile()) {
+						try {
+							IOUtils.writerFile(bufferedWriter,(writer) -> {
+								try {
+									writer.write("\n");
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+							} , resource.getResourceName());
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+
+				}
+
+				RootBeanDefinition rootBeanDefinition = new RootBeanDefinition(searchClz);
+				rootBeanDefinition.setResource(resource);
+				rootBeanDefinition.setAnnotationMetadata(metadataHolder);
+				contain.add(rootBeanDefinition);
+			}
+		}
+		return contain;
+	}
 
 	public Set<String> getPackagePath(ComponentScan componentScan,SourceClass source) {
 		List<String> pathList = CollectionUtils.asList(componentScan.value());
-		
+
 		for (int i = 0; i < pathList.size(); i++) {
 			pathList.set(i, resolveBasePackage(pathList.get(i)));
 		}
-		
+
 		Class<?>[] basePackageClasses = componentScan.basePackageClasses();
 		for (Class<?> clz : basePackageClasses) {
 			String packagePath = clz.getPackage().getName();
 			pathList.add(packagePath);
 		}
-		
+
 		Set<String> candidate = new LinkedHashSet<>();
 		if (pathList.isEmpty()) { // 默认使用根启动所在包为扫描路径
 			candidate.add( source.getSource().getPackage().getName() );
 		} else {
-			sortPackagePath(pathList, candidate);
+			FileSearch.sortPackagePath(pathList, candidate);
 		}
 		return candidate;
 	}
-	
+
 	/**
 	 * 解析包扫描路径中可能存在的占位符${...}
 	 * @param basePackage
@@ -379,48 +378,7 @@ public class ComponentScanAnnotationParser {
 	protected String resolveBasePackage(String basePackage) {
 		return this.environment.resolveRequiredPlaceholders(basePackage);
 	}
-	
-	/**
-	 * 候选路径选择，越靠近项目根目录的级别更高
-	 * @param pathList - 排序结果集
-	 * @param candidate - 候选结果集
-	 */
-	private void  sortPackagePath(List<String> pathList, Set<String> candidate ) {
-		// 标识是否找到更高级别的路径
-		boolean hight = false;
-		// 最短路径的索引
-		int index = 0;
-		// 存储根据分隔符分割路径后的最短路径数组长度
-		int len = Integer.MAX_VALUE;
-		for (int i = 0; i < pathList.size(); i++) {
-			String element = pathList.get(i);
-			String[] tokenizeToStringArray = StringUtils.tokenizeToStringArray(element, ".",null);
-			if (tokenizeToStringArray.length < len) {
-				index = i;
-				len = tokenizeToStringArray.length;
-				if (hight) { // 意味着找到更高级别的路径，所有放弃之前的选择
-					DebugUtils.log(logger, "找到更高级别的路径，所有放弃之前的选择："+candidate);
-					candidate.clear();
-				}
-				hight = true;
-				candidate.add(element);
-				DebugUtils.log(logger, "更高级别的路径："+element);
-			} else if (tokenizeToStringArray.length == len) {
-				String string = pathList.get(index);
-				if (string == element) {
-					DebugUtils.log(logger, "相同的路径："+element);
-					continue ;
-				} else {
-					DebugUtils.log(logger, "同级别的路径，添加候选："+element);
-					candidate.add(element);
-				}
-			}
-		}
-		candidate.add(pathList.get(index));
 
-		logger.info("包扫描路径最终候选："+candidate);
-	}
-	
 	/**
 	 * 封装 @ComponentScan 的相关信息
 	 */
@@ -434,11 +392,11 @@ public class ComponentScanAnnotationParser {
 		private boolean isIazy;
 		/** 扫描结果过滤器 */
 		private Filter[] excludeFilters;
-	    /** 标注@ComponentScan注解的Class对象 */
+		/** 标注@ComponentScan注解的Class对象 */
 		private final  Class<?> source;
 		private SourceClass sourceClass;
-		
-		
+
+
 		public ComponentDefinition(ComponentScan componentScan,Class<?> source) {
 			this.source = source;
 			this.isIazy = componentScan.lazyInit();
@@ -446,7 +404,7 @@ public class ComponentScanAnnotationParser {
 			this.useIndexed = componentScan.useIndexed();
 			this.excludeFilters = componentScan.excludeFilters();
 		}
-		
+
 		public ComponentDefinition(ComponentScan componentScan, SourceClass source) {
 			this(componentScan, source.getSource());
 			this.sourceClass = source;
@@ -480,7 +438,7 @@ public class ComponentScanAnnotationParser {
 			return source;
 		}
 	}
-	
+
 	// 封装单个TypeFilter实现的相关信息
 	@SuppressWarnings("unused")
 	private class TypeFilterStore {
@@ -490,7 +448,7 @@ public class ComponentScanAnnotationParser {
 		private String pattern;
 		private Class<? extends Annotation>[] annos;
 		private Class<?> source;
-		
+
 		public TypeFilterStore(Filter filter,Class<? extends TypeFilter> clz, TypeFilter typeFilter) {
 			super();
 			this.filterType = filter.type();
@@ -500,7 +458,7 @@ public class ComponentScanAnnotationParser {
 			this.annos = filter.annotations();
 			this.source = filter.source();
 		}
-		
+
 		/**
 		 * 为TypeFilter实现类对象设置 ’与时俱进‘ 的相关属性
 		 * @param pattern
@@ -510,12 +468,12 @@ public class ComponentScanAnnotationParser {
 		public void invorkAware(String pattern, Class<? extends Annotation>[] annos , Class<?> source) {
 			this.typeFilter.invorkAware(pattern, annos, source);
 		}
-		
+
 		@Override
 		public boolean equals(Object obj) {
 			return this.sourceType.equals(obj);
 		}
-		
+
 		public FilterType getFilterType() {
 			return filterType;
 		}

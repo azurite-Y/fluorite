@@ -2,9 +2,13 @@ package org.zy.fluorite.core.utils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+
+import org.zy.fluorite.core.interfaces.function.InvorkFunction;
 
 /**
  * @author: zy(azurite-Y);
@@ -57,7 +61,7 @@ public class ClassUtils {
 	}
 
 	/**
-	 * 返回给定方法的限定名，由完全限定的接口/类名+“”+方法名组成
+	 * 返回给定方法的限定名，由完全限定的接口/类名+“.”+方法名组成
 	 * 
 	 * @param method
 	 * @param clazz
@@ -68,6 +72,31 @@ public class ClassUtils {
 		return (clazz != null ? clazz : method.getDeclaringClass()).getName() + '.' + method.getName();
 	}
 
+	/**
+	 * 获取方法的全限定名称，如：org.zy.fluorite.core.utils.ClassUtils.fullyQualifiedName(Method)-String
+	 * @return
+	 */
+	public static String getFullyQualifiedName(Method method) {
+		StringBuilder builder = new StringBuilder();
+		builder.append(method.getDeclaringClass().getName());
+		builder.append(".");
+		builder.append(method.getName());
+		builder.append("(");
+		
+		Class<?>[] parameterTypes = method.getParameterTypes();
+		int length = parameterTypes.length;
+		for (int i = 0; i < length; i++) {
+			Class<?> clz = parameterTypes[i];
+			
+			builder.append(clz.getSimpleName());
+			if (i != length - 1)
+			builder.append(",");
+		}
+		builder.append(")-");
+		builder.append(method.getReturnType().getSimpleName());
+		return builder.toString();
+	}
+	
 	public static boolean isInnerClass(Class<?> clz) {
 		return (clz.isMemberClass() && !Modifier.isStatic(clz.getModifiers()));
 	}
@@ -152,17 +181,49 @@ public class ClassUtils {
 	}
 	
 	/**
-	 * 获得指定对象实现的所有接口
+	 * 获得指定类实现的所有接口
+	 * @param target
+	 * @return
+	 */
+	public static Class<?>[] getAllInterfacesAsArray(Class<?> targetClz) {
+		List<Class<?>> interfacesToList = getAllInterfacesToList(targetClz);
+		return interfacesToList.toArray(new Class<?>[]{});
+	}
+	
+	/**
+	 * 获得指定类实现的所有接口
 	 * @param target
 	 * @return
 	 */
 	public static Set<Class<?>> getAllInterfacesToSet(Class<?> targetClz) {
 		Set<Class<?>> interfaces = new LinkedHashSet<>();
+		getAllInterfaces(targetClz, interfaces::add);
+		return interfaces;
+	}
+	
+	/**
+	 * 获得指定类实现的所有接口
+	 * @param target
+	 * @return
+	 */
+	public static List<Class<?>> getAllInterfacesToList(Class<?> targetClz) {
+		List<Class<?>> interfaces = new ArrayList<>();
+		getAllInterfaces(targetClz, interfaces::add);
+		return interfaces;
+	}
+	
+	/**
+	 * 获得指定类实现的所有接口
+	 * @param target
+	 * @return
+	 */
+	public static Set<Class<?>> getAllInterfaces(Class<?> targetClz,InvorkFunction<Class<?>> invorkFunction) {
+		Set<Class<?>> interfaces = new LinkedHashSet<>();
 		Class<?> current = targetClz;
 		while (current != null && current != Object.class) {
 			Class<?>[] ifcs = current.getInterfaces();
 			for (Class<?> ifc : ifcs) {
-				interfaces.add(ifc);
+				invorkFunction.invork(ifc);
 			}
 			current = current.getSuperclass();
 		}

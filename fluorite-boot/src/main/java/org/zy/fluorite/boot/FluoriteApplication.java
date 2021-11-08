@@ -83,6 +83,9 @@ public class FluoriteApplication {
 		if (this.rennerAs.debugFormAop()) {
 			DebugUtils.debugFromAop = true;
 		}
+		if (this.rennerAs.debugFromTransaction()) {
+			DebugUtils.debugFromTransaction = true;
+		}
 		
 		this.initializers = getInitializers();
 		this.listeners = getListeners();
@@ -116,7 +119,7 @@ public class FluoriteApplication {
 			// 根据配置环境参数填充上下文
 			prepareContext(context, environment, listeners, args);
 
-			// 1.8 刷新上下文
+			// 刷新上下文
 			refreshContext(context);
 
 			// 执行的是空方法

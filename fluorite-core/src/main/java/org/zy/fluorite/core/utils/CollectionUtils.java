@@ -1,5 +1,6 @@
 package org.zy.fluorite.core.utils;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -12,6 +13,22 @@ import java.util.Set;
  * @Description 容器工具类
  */
 public class CollectionUtils {
+	/**
+	 * 将指定的数组对象转换为List对象
+	 * @param <T> - 入参类型
+	 * @param obj - 需要转换的目标数组对象
+	 * @return 存储目标数组对象类型元素的List集合对象
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> List<T> asList(T obj) {
+		int length = Array.getLength(obj);
+		List<T> list = new ArrayList<>(length);
+	    for (int i = 0; i < length; i++) {
+	    	T object = (T) Array.get(obj, i);
+	    	list.add(object);
+	    }
+		return list;
+	}
 	
 	/** 
 	 * 将指定的可变参数存储到List容器中并返回之

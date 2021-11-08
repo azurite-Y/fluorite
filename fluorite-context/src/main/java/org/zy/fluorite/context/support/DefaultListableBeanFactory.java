@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 import org.zy.fluorite.beans.beanDefinittion.AbstractBeanDefinition;
 import org.zy.fluorite.beans.beanDefinittion.RootBeanDefinition;
@@ -34,7 +35,9 @@ import org.zy.fluorite.beans.interfaces.BeanDefinition;
 import org.zy.fluorite.core.convert.ResolvableType;
 import org.zy.fluorite.core.exception.BeansException;
 import org.zy.fluorite.core.exception.TypeMismatchException;
+import org.zy.fluorite.core.interfaces.function.BeanObjectProvider;
 import org.zy.fluorite.core.interfaces.function.ObjectFactory;
+import org.zy.fluorite.core.interfaces.function.ObjectProvider;
 import org.zy.fluorite.core.interfaces.instantiation.FactoryBean;
 import org.zy.fluorite.core.interfaces.instantiation.SmartFactoryBean;
 import org.zy.fluorite.core.interfaces.instantiation.SmartInitializingSingleton;
@@ -50,7 +53,7 @@ import org.zy.fluorite.core.utils.StringUtils;
  *              一个基于bean定义元数据的成熟bean工厂，可通过后处理器进行扩展。
  */
 public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFactory
-		implements ConfigurableListableBeanFactory, BeanDefinitionRegistry {
+implements ConfigurableListableBeanFactory, BeanDefinitionRegistry {
 
 	private String serializationId;
 
@@ -313,8 +316,8 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		if (beanDefinition != null) {
 			return (RootBeanDefinition) beanDefinition;
 		}
-//		DebugUtils.log(logger, "未找到指定的BeanDefinition，by name："+beanName);
-//		throw new NoSuchBeanDefinitionException(beanName);
+		//		DebugUtils.log(logger, "未找到指定的BeanDefinition，by name："+beanName);
+		//		throw new NoSuchBeanDefinitionException(beanName);
 		return null;
 	}
 
@@ -336,7 +339,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 	@Override
 	public String[] getBeanNamesForType(ResolvableType type) {
-		return getBeanNamesForType(type, true, true);
+		/**
+		 * 尽可能的让IOC先初始化必要类型的Bean，最后在刷新上下文的时候再初始化FactoryBean
+		 */
+		return getBeanNamesForType(type, true, false);
 	}
 
 	@Override
@@ -532,20 +538,28 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		}
 		return super.autowireCandidateResolver;
 	}
-	
+
 	@Override
 	public Object resolveDependency(DependencyDescriptor descriptor, String requestingBeanName,
 			Set<String> autowiredBeanNames) throws BeansException {
 		descriptor.initParameterNameDiscovery(getParameterNameDiscoverer());
-		// 判断是否需要生成懒加载对象
-		Object result = getAutowireCandidateResolver(this).getLazyResolutionProxyIfNecessary(descriptor,
-				requestingBeanName);
-		if (result == null) {
-			result = doResolveDependency(descriptor, requestingBeanName, autowiredBeanNames);
+		/**
+		 * 优先解析其他Bean注入接口
+		 */
+		Class<?> dependencyType = descriptor.getDependencyType();
+		if (ObjectFactory.class == dependencyType || ObjectProvider.class == dependencyType) {
+			return new DependencyObjectProvider(descriptor, requestingBeanName);
+		} else {
+			// 判断是否需要生成懒加载对象
+			Object result = getAutowireCandidateResolver(this).getLazyResolutionProxyIfNecessary(descriptor,
+					requestingBeanName);
+			if (result == null) {
+				result = doResolveDependency(descriptor, requestingBeanName, autowiredBeanNames);
+			}
+			return result;
 		}
-		return result;
 	}
-	
+
 	@Override
 	public Object doResolveDependency(DependencyDescriptor descriptor, String beanName,
 			Set<String> autowiredBeanNames) {
@@ -572,8 +586,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			List<String> matchingBeans = findAutowireCandidates(beanName, type, descriptor);
 			if (matchingBeans.isEmpty()) {
 				if (descriptor.isRequired()) {
+					if (BeanFactory.class.isAssignableFrom(type)) {
+						return this;
+					}
 					// 对于无法解析的依赖项，引发BeanNotOfRequiredTypeException
-					throw new BeanNotOfRequiredTypeException("无法解析的依赖项，by：" + descriptor.getDependencyType().getName());
+					throw new BeanNotOfRequiredTypeException("无法解析的依赖项，by：" + descriptor.getDependencyType().getName() + " ,beanName：" + beanName);
 				}
 				return null;
 			}
@@ -672,7 +689,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		if (!result.isEmpty()) {
 			return result;
 		}
-		
+
 		// 已注册的BeanDefinition中未找到符合的，那么寻找已生成的Bean。
 		Set<Entry<String, Object>> entrySet = this.singletonObjects.entrySet();
 		Class<?> clz = null;
@@ -682,8 +699,6 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 				result.add(entry.getKey());
 			}
 		}
-		
-		
 		return result;
 	}
 
@@ -752,5 +767,96 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	@Override
 	public Map<String, BeanDefinition> getBeanDefinitions() throws BeansException {
 		return this.beanDefinitionMap;
+	}
+
+	/**
+	 * FacotryProvider及其子类依赖注入Bean封装类
+	 * @author Azurite-Y
+	 *
+	 */
+	@SuppressWarnings("serial")
+	private class DependencyObjectProvider implements BeanObjectProvider<Object> {
+
+		private final DependencyDescriptor descriptor;
+
+		private final String beanName;
+
+		public DependencyObjectProvider(DependencyDescriptor descriptor, String beanName) {
+			this.descriptor = descriptor;
+			this.beanName = beanName;
+		}
+
+		@Override
+		public Object getObject() throws BeansException {
+			Object result = doResolveDependency(this.descriptor, this.beanName, null);
+			if (result == null) {
+				throw new NoSuchBeanDefinitionException(this.descriptor.getSourceClass().getName());
+			}
+			return result;
+		}
+
+		@Override
+		public Object getObject(final Object... args) throws BeansException {
+			DependencyDescriptor descriptorToUse = new DependencyDescriptor(descriptor);
+			Object result = doResolveDependency(descriptorToUse, this.beanName, null);
+			if (result == null) {
+				throw new NoSuchBeanDefinitionException(this.descriptor.getSourceClass().getName());
+			}
+			return result;
+		}
+
+		@Override
+		public Object getIfAvailable() throws BeansException {
+			DependencyDescriptor descriptorToUse = new DependencyDescriptor(this.descriptor) {
+				@Override
+				public boolean isRequired() {
+					return false;
+				}
+			};
+			return doResolveDependency(descriptorToUse, this.beanName, null);
+		}
+
+		@Override
+		public Object getIfUnique() throws BeansException {
+			DependencyDescriptor descriptorToUse = new DependencyDescriptor(this.descriptor) {
+				@Override
+				public boolean isRequired() {
+					return false;
+				}
+			};
+			return doResolveDependency(descriptorToUse, this.beanName, null);
+		}
+
+		@Override
+		public Stream<Object> stream() {
+			return resolveStream(false);
+		}
+
+		@Override
+		public Stream<Object> orderedStream() {
+			return resolveStream(true);
+		}
+
+		@SuppressWarnings("unchecked")
+		private Stream<Object> resolveStream(boolean ordered) {
+			DependencyDescriptor descriptorToUse = new StreamDependencyDescriptor(this.descriptor, ordered);
+			Object result = doResolveDependency(descriptorToUse, this.beanName, null);
+			return (result instanceof Stream ? (Stream<Object>) result : Stream.of(result));
+		}
+	}
+
+	@SuppressWarnings({"serial", "unused"})
+	private static class StreamDependencyDescriptor extends DependencyDescriptor {
+
+		private final boolean ordered;
+
+		public StreamDependencyDescriptor(DependencyDescriptor original, boolean ordered) {
+			super(original);
+			this.ordered = ordered;
+		}
+
+		public boolean isOrdered() {
+			return this.ordered;
+		}
 	}
 }

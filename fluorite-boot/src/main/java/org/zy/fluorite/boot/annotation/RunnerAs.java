@@ -42,4 +42,10 @@ public @interface RunnerAs {
 	 * @return
 	 */
 	boolean debugFormAop() default false;
+	
+	/**
+	 * 是否开启特定于Transaction模块debug模式，默认为false则不开启debug模式
+	 * @return
+	 */
+	boolean debugFromTransaction() default false;
 }

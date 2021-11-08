@@ -1,8 +1,11 @@
 package org.zy.fluorite.aop.utils;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.zy.fluorite.aop.interfaces.Advisor;
 import org.zy.fluorite.aop.interfaces.FluoriteProxy;
@@ -90,7 +93,27 @@ public final class AopUtils {
 	 */
 	public static boolean canApply(Pointcut pointcut, Class<?> targetClass) {
 		Assert.notNull(pointcut, "Pointcut不能为null");
-		return pointcut.matcher(targetClass);
+		
+		Set<Class<?>> classes = new LinkedHashSet<>();
+		if (!Proxy.isProxyClass(targetClass)) {
+			classes.add(ClassUtils.getUserClass(targetClass));
+		}
+		classes.addAll(ClassUtils.getAllInterfacesToSet(targetClass));
+		
+		Method[] declaredMethods = null;
+		for (Class<?> clz : classes) {
+			if (!pointcut.matcher(clz)) {
+				return false;
+			}
+			declaredMethods = clz.getDeclaredMethods();
+			for (Method method : declaredMethods) {
+				if (pointcut.matcher(clz, method)) {
+					return true;
+				}
+			}
+		}
+		
+		return false;
 	}
 
 	/** 判断给定方法是否是 {@linkplain Object#finalize()} 方法*/

@@ -18,8 +18,7 @@ import java.lang.reflect.Modifier;
 @Documented
 public @interface Pointcut {
 	/**
-	 * 切点的全限定名称，但方法参数无论切点方法是否有都不需在此指定。
-	 * 而在args()方法中指定。
+	 * 切点的全限定名称，但方法参数无论切点方法是否有都不需在此指定。而在args()方法中指定。
 	 * ps：
 	 * <ol>语法示例：
 	 * <li>org.zy.fluorite.aop.aspectj.annotation.Pointcut.*：将Pointcut类中定义的方法全部作为切点匹配。</li>

@@ -109,7 +109,7 @@ public class ExecutableParameter {
 	 * 返回首个参数的类型
 	 * @return
 	 */
-	public Class<?> getParameterType() {
-		return this.parameterTypes.get(0);
+	public Class<?> getParameterType(int index) {
+		return this.parameterTypes.get(index);
 	}
 }
