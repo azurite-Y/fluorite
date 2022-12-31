@@ -2,7 +2,6 @@ package org.zy.fluorite.context.annotation.interfaces;
 
 import org.zy.fluorite.beans.factory.interfaces.BeanDefinitionRegistry;
 import org.zy.fluorite.beans.factory.interfaces.BeanNameGenerator;
-import org.zy.fluorite.context.support.AnnotationBeanNameGenerator;
 import org.zy.fluorite.core.environment.interfaces.Environment;
 import org.zy.fluorite.core.interfaces.AnnotationMetadata;
 
@@ -20,6 +19,7 @@ public interface ImportBeanDefinitionRegistrar {
 	 * @param importBeanNameGenerator - 注册Bean的beanName生成器
 	 */
 	default void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry,BeanNameGenerator importBeanNameGenerator) {
+		registerBeanDefinitions(metadata, registry);
 	}
 
 	/**
@@ -29,7 +29,6 @@ public interface ImportBeanDefinitionRegistrar {
 	 * @param registry  
 	 */
 	default void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
-		registerBeanDefinitions(metadata, registry, AnnotationBeanNameGenerator.INSTANCE);
 	}
 	
 	/**

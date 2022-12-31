@@ -1,5 +1,7 @@
 package org.zy.fluorite.beans.beanDefinittion;
 
+import java.lang.reflect.Type;
+
 import org.zy.fluorite.core.interfaces.Resource;
 import org.zy.fluorite.core.utils.ReflectionUtils;
 
@@ -71,6 +73,16 @@ public class ScannedGenericBeanDefinition extends AbstractBeanDefinition {
 	}
 	@Override
 	public void setParentName(String parentName) {
+		
+	}
+	@Override
+	public void setResolvableTypeTargetType(Type resolvableType) {
+		// TODO 自动生成的方法存根
+		
+	}
+	@Override
+	public void setResolvableTypeFactoryMethodReturnType(Type returnType) {
+		// TODO 自动生成的方法存根
 		
 	}
 }

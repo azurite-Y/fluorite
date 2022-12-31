@@ -45,22 +45,23 @@ public class OnPropertyCondition implements ConfigurationCondition {
 				if (builder.length() > prefixLen)
 					builder.delete(prefixLen, builder.length());
 
+				builder.append(".");
 				builder.append(value);
 
 				String property = environment.getProperty(builder.toString());
 				if (property == null) { // 若matchIfMissing为true则跳过此属性
 					if (matchIfMissing) {
-						DebugUtils.log(logger, "@ConditionalOnProperty-忽略未定义的属性 ，by key："+ builder.toString() +" 源头："+attributes.getDisplayName());
+						DebugUtils.log(logger, "@ConditionalOnProperty-忽略未定义的属性 , by key: "+ builder.toString() +", 源头: "+attributes.getDisplayName());
 						continue;
 					} else {
-						DebugUtils.log(logger, "@ConditionalOnProperty-条件不成立 [理由：未定义此属性] ，by key："+ builder.toString() +" 源头："+attributes.getDisplayName());
+						DebugUtils.log(logger, "@ConditionalOnProperty-条件不成立 [理由: 未定义此属性] , by key: "+ builder.toString() +", 源头: "+attributes.getDisplayName());
 						return false;
 					}
 				} else if (!havingValue.isEmpty() && !havingValue.equals(property)) { // 与预期不符
-					DebugUtils.log(logger, "@ConditionalOnProperty-条件不成立 [理由：不符合预期属性值的] ，by key："+ builder.toString() +"预期属性值："+havingValue+" 源头："+attributes.getDisplayName());
+					DebugUtils.log(logger, "@ConditionalOnProperty-条件不成立 [理由: 不符合预期属性值] , by key: "+ builder.toString() +", 预期属性值: "+havingValue+", 源头: "+attributes.getDisplayName());
 					return false;
 				}
-				DebugUtils.log(logger, "@ConditionalOnProperty-条件成立 ，by key："+ builder.toString() +" 源头："+attributes.getDisplayName());
+				DebugUtils.log(logger, "@ConditionalOnProperty-条件成立 , by key: "+ builder.toString() +", 源头: "+attributes.getDisplayName());
 			}
 		}
 		return true;

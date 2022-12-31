@@ -9,7 +9,11 @@ import java.lang.annotation.Target;
 /**
  * @DateTime 2020年6月29日 下午11:53:15;
  * @author zy(azurite-Y);
- * @Description 指定的类在BeanFactory中只有一个候选的bean，或者有多个候选的bean，但是其中一个指定了primary
+ * @Description
+ * 只有当指定类的bean已经包含在BeanFactory中并且可以确定单个候选时才匹配。
+ * <p>
+ * 这个条件只能匹配到目前为止已经被应用程序上下文处理过的bean定义，因此，强烈建议只在自动配置类上使用这个条件。
+ * 如果候选bean可能由另一个自动配置创建，请确保使用此条件的bean在后面运行。
  */
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)

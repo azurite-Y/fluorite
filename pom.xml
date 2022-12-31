@@ -56,12 +56,6 @@
 				<version>1.2.3</version>
 			</dependency>
 			<dependency>
-				<groupId>cglib</groupId>
-				<artifactId>cglib</artifactId>
-				<optional>true</optional>
-				<version>3.3.0</version>
-			</dependency>
-			<dependency>
 				<groupId>javax.annotation</groupId>
 				<artifactId>javax.annotation-api</artifactId>
 				<version>1.3.2</version>
@@ -79,6 +73,26 @@
 				<artifactId>junit-jupiter-engine</artifactId>
 				<version>5.4.0</version>
 				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>cglib</groupId>
+				<artifactId>cglib</artifactId>
+				<optional>true</optional>
+				<version>3.3.0</version>
+			</dependency>
+			<dependency>
+				<groupId>com.alibaba</groupId>
+				<artifactId>fastjson</artifactId>
+				<version>1.2.62</version>
+				<!-- 由使用者或调用者提供 -->
+				<scope>provided</scope>
+				<optional>true</optional>
+			</dependency>
+			<dependency>
+				<groupId>org.zy.moonStone</groupId>
+				<artifactId>MoonStone-Core</artifactId>
+				<version>1.0.0.RELEASE</version>
+				<optional>true</optional>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

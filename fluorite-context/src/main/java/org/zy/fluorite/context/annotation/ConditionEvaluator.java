@@ -63,41 +63,20 @@ public class ConditionEvaluator {
 			return false;
 		}
 
-		Set<Class<? extends Condition>> values = new HashSet<>();
+		Set<Class<? extends ConfigurationCondition>> values = new HashSet<>();
 		for (Conditional conditional : annotations) {
-			for (Class<? extends Condition> clz : conditional.value()) {
+			for (Class<? extends ConfigurationCondition> clz : conditional.value()) {
 				// 只会存储一个Condition实现的类型，同类型会被覆盖
 				values.add(clz);
 			}
 		}
 		AnnotationAwareOrderComparator.sort(values);
 		
-		Conditional conditionalRemove = null;
-		boolean isRemove = false;
-		for (Class<? extends Condition> value : values) {
-			Condition condition = ReflectionUtils.instantiateClass(value);
+		for (Class<? extends ConfigurationCondition> value : values) {
+			ConfigurationCondition condition = ReflectionUtils.instantiateClass(value);
 			DebugUtils.log(logger,"要使用的Condition实现：" + condition.getClass().getSimpleName() + "，注解标注位置：" + attributes.getElement());
 			
-			ConfigurationPhase requiredPhase = null;
-			if (condition instanceof ConfigurationCondition) {
-				requiredPhase = ((ConfigurationCondition) condition).getConfigurationPhase();
-			}
-			if (requiredPhase == null || requiredPhase == phase) {
-				for (Conditional cond : annotations) {
-					for (Class<? extends Condition> clz : cond.value()) {
-						if (requiredPhase != null && clz.equals(value)) {
-							isRemove = true;
-							conditionalRemove = cond;
-							break;
-						}
-					}
-				}
-				if (isRemove) { 
-					isRemove = false;
-					// 从注解映射集中删除当前调用的Condition实现，以免下一个阶段又要实例化缓存中获得此实现
-					annotations.remove(conditionalRemove);
-					conditionalRemove = null;
-				}
+			if (condition.getConfigurationPhase() == phase) { // 评估阶段筛选
 				if (!condition.matcher(this.context, attributes)) {
 					// 若条件评估结果是应该跳过则直接返回结果
 					return true;
@@ -108,7 +87,7 @@ public class ConditionEvaluator {
 	}
 
 	/**
-	 * 判断导入此类的配置类是否需被排除，若需要则摆出此导入类
+	 * 判断导入此类的配置类是否需被排除，若需要则排除此配置类
 	 * 
 	 * @param configClass
 	 * @return true则应跳过，false则不应跳过
@@ -131,8 +110,7 @@ public class ConditionEvaluator {
 				}
 			}
 			if (skip == null) {
-				skip = shouldSkip(configClass.getAnnotationMetadata().getAnnotationAttributesForClass(),
-						ConfigurationPhase.REGISTER_BEAN);
+				skip = shouldSkip(configClass.getAnnotationMetadata().getAnnotationAttributesForClass(), ConfigurationPhase.REGISTER_BEAN);
 			}
 			// 存储排除结果
 			this.skipped.put(configClass, skip);

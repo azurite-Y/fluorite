@@ -3,6 +3,7 @@ package org.zy.fluorite.beans.beanDefinittion;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.zy.fluorite.beans.interfaces.BeanDefinition;
+import org.zy.fluorite.core.convert.ResolvableType;
 import org.zy.fluorite.core.utils.Assert;
 
 /**
@@ -26,10 +28,16 @@ public class RootBeanDefinition extends AbstractBeanDefinition {
 
 	/** 包可见字段，存储已解析的Class对象 */
 	private volatile Class<?> resolvedTargetType;
-
+	
+	/** bean Class 对象的可解析对象 */
+	volatile ResolvableType resolvableTypeTargetType;
+	
 	/** 包可见字段，存储工厂方法的返回类型 */
 	private volatile Class<?> factoryMethodReturnType;
 
+	/** Bean factoryMethodReturnType 对象的可解析对象 */
+	private ResolvableType resolvableTypeFactoryMethodReturnType;
+	
 	/** 下面四个构造函数字段的公共锁 */
 	private final Object constructorArgumentLock = new Object();
 
@@ -390,5 +398,32 @@ public class RootBeanDefinition extends AbstractBeanDefinition {
 	public void setTargetType(Class<?> targetType) {
 		this.targetType = targetType;
 	}
-
+	
+	@Override
+	public ResolvableType getResolvableType() {
+		ResolvableType targetType = this.resolvableTypeTargetType;
+		if (targetType != null) {
+			return targetType;
+		} else if (this.resolvedTargetType != null) {
+			return this.resolvableTypeTargetType = ResolvableType.forClass(resolvedTargetType);
+		}
+		
+		ResolvableType returnType = this.resolvableTypeFactoryMethodReturnType;
+		if (returnType != null) {
+			return returnType;
+		} else if (this.factoryMethodReturnType != null) {
+			return this.resolvableTypeFactoryMethodReturnType = ResolvableType.forClass(this.factoryMethodReturnType);
+		}
+		return super.getResolvableType();
+	}
+	
+	@Override
+	public void setResolvableTypeFactoryMethodReturnType(Type returnType) {
+		this.resolvableTypeFactoryMethodReturnType = ResolvableType.forClass(returnType);
+	}
+	
+	@Override
+	public void setResolvableTypeTargetType(Type resolvableType) {
+		this.resolvableTypeTargetType = ResolvableType.forClass(resolvableType);
+	}
 }

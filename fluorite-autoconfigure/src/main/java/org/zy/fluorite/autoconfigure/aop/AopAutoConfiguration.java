@@ -7,7 +7,7 @@ import org.zy.fluorite.core.annotation.Bean;
 /**
  * @DateTime 2020年7月13日 上午1:10:07;
  * @author zy(azurite-Y);
- * @Description
+ * @Description 自 /fluorite-autoconfigure/src/main/resources/META-INF/fluorite.factories 加载
  */
 public class AopAutoConfiguration {
 	@Bean

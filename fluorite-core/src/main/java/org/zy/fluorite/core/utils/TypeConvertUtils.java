@@ -5,7 +5,11 @@ import java.util.List;
 
 import org.zy.fluorite.core.convert.EveryToStringConvertService;
 import org.zy.fluorite.core.convert.NumberToNumberConvertService;
+import org.zy.fluorite.core.convert.StringToBooleanConversionService;
+import org.zy.fluorite.core.convert.StringToCharsetConvertService;
 import org.zy.fluorite.core.convert.StringToClassConvertService;
+import org.zy.fluorite.core.convert.StringToDurationConversionService;
+import org.zy.fluorite.core.convert.StringToFileConvertService;
 import org.zy.fluorite.core.convert.StringToListConvertService;
 import org.zy.fluorite.core.convert.StringToNumberConverterService;
 import org.zy.fluorite.core.exception.TypeMismatchException;
@@ -26,6 +30,10 @@ public class TypeConvertUtils {
 		converts.add(new StringToListConvertService());
 		converts.add(new StringToClassConvertService());
 		converts.add(new EveryToStringConvertService());
+		converts.add(new StringToBooleanConversionService());
+		converts.add(new StringToCharsetConvertService());
+		converts.add(new StringToFileConvertService());
+		converts.add(new StringToDurationConversionService());
 	}
 	
 	/**

@@ -1,8 +1,11 @@
 package org.zy.fluorite.beans.interfaces;
 
+import java.lang.reflect.Type;
+
 import org.zy.fluorite.beans.beanDefinittion.RootBeanDefinition;
 import org.zy.fluorite.beans.support.ConstructorArgumentValues;
 import org.zy.fluorite.beans.support.MutablePropertyValues;
+import org.zy.fluorite.core.convert.ResolvableType;
 import org.zy.fluorite.core.interfaces.AnnotationMetadata;
 import org.zy.fluorite.core.interfaces.AttributeAccessor;
 import org.zy.fluorite.core.interfaces.BeanMetadataElement;
@@ -203,6 +206,16 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 	AnnotationMetadata getAnnotationMetadata();
 	
 	void setAnnotationMetadata(AnnotationMetadata annotationMetadata);
+	
+	/**
+	 * 此 Bean 的可解析类型
+	 * @return the resolvable type (potentially {@link ResolvableType#NONE})
+	 */
+	ResolvableType getResolvableType();
+	
+	void setResolvableTypeTargetType(Type resolvableType);
+	
+	void setResolvableTypeFactoryMethodReturnType(Type returnType);
 	
 //	BeanDefinition getOriginatingBeanDefinition();
 //	

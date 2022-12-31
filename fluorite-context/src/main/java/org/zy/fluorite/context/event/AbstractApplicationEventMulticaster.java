@@ -214,7 +214,7 @@ public abstract class AbstractApplicationEventMulticaster implements Application
 	}
 
 	/**
-	 * 过检查其泛型声明的事件类型及早对其进行筛选。
+	 * 通过检查其泛型声明的事件类型及早对其进行筛选。
 	 * @param beanFactory
 	 * @param listenerBeanName
 	 * @param eventType - 要检查的事件类型
@@ -229,10 +229,12 @@ public abstract class AbstractApplicationEventMulticaster implements Application
 		if (!supportsEvent(listenerType, eventType)) {
 			return false;
 		}
+		
 		try {
 			RootBeanDefinition bd = beanFactory.getBeanDefinition(listenerBeanName);
+			
 			// 获得bd所指代类的泛型信息
-			ResolvableType genericEventType = ResolvableType.forClass(bd.getBeanClass()).getGeneric();
+			ResolvableType genericEventType = bd.getResolvableType().as(ApplicationListener.class).getGeneric();
 			return (genericEventType == ResolvableType.NONE || genericEventType.isAssignableFrom(eventType));
 		}
 		catch (NoSuchBeanDefinitionException ex) {

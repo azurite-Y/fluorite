@@ -74,7 +74,7 @@ public class QualifierAnnotationAutowireCandidateResolver implements AutowireCan
 		TargetSource ts = new TargetSource() {
 			@Override
 			public Class<?> getTargetClass() {
-				return descriptor.getDependencyType();
+				return descriptor.getResolveDependencyType();
 			}
 
 			@Override
@@ -94,7 +94,7 @@ public class QualifierAnnotationAutowireCandidateResolver implements AutowireCan
 					} else if (Set.class == type || Collection.class == type) {
 						return Collections.emptySet();
 					}
-					throw new NoSuchBeanDefinitionException("延迟注入点不存在可选依赖项，by："+descriptor.getDependencyType());
+					throw new NoSuchBeanDefinitionException("延迟注入点不存在可选依赖项，by："+descriptor.getResolveDependencyType());
 				}
 				return target;
 			}
@@ -104,7 +104,7 @@ public class QualifierAnnotationAutowireCandidateResolver implements AutowireCan
 		};
 		ProxyFactory pf = new ProxyFactory();
 		pf.setTargetSource(ts);
-		Class<?> dependencyType = descriptor.getDependencyType();
+		Class<?> dependencyType = descriptor.getResolveDependencyType();
 		if (dependencyType.isInterface()) {
 			pf.addInterface(dependencyType);
 		}

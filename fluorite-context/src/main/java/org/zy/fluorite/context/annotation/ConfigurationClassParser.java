@@ -159,8 +159,7 @@ public class ConfigurationClassParser {
 		List<ComponentScan> componentScans = AnnotationUtils.findComponentScan(annotationMetadata);
 		// shouldSkip()：根据@Conditional注释确定是否应跳过项
 		if (!componentScans.isEmpty()
-				&& !this.conditionEvaluator.shouldSkip(annotationMetadata.getAnnotationAttributesForClass(),
-						ConfigurationPhase.PARSE_CONFIGURATION)) {
+				&& !this.conditionEvaluator.shouldSkip(annotationMetadata.getAnnotationAttributesForClass(), ConfigurationPhase.PARSE_CONFIGURATION)) {
 			for (ComponentScan componentScan : componentScans) {
 				Set<BeanDefinition> scannedBeanDefinitions = this.componentScanParser.parse(componentScan, source);
 				// 检查扫描到定义集以获取任何进一步的配置类，并在需要时递归解析
@@ -231,8 +230,7 @@ public class ConfigurationClassParser {
 				AnnotationAttributes attributesForMethod = beanMethod.getAnnotationAttributesForMethod();
 				if (attributesForMethod.getAnnotation(Bean.class) != null) {
 					if (method.isDefault() && DebugUtils.debug) {
-						logger.info("忽略在接口中找到的@Bean标注方法，理由：此方法为默认方法，by interface：" + clz.getName() + " method："
-								+ method.getName());
+						logger.info("忽略在接口中找到的@Bean标注方法，理由：此方法为默认方法，by interface：" + clz.getName() + " method："+ method.getName());
 						return;
 					}
 					configClass.addBeanMethod(beanMethod);
@@ -249,8 +247,7 @@ public class ConfigurationClassParser {
 	 * @param configClass
 	 * @param source      - 代表当前检查类或当前检查类的父类
 	 */
-	private void processMemberClasses(ConfigurationClass configClass, SourceClass source)
-			throws BeanDefinitionParsingException {
+	private void processMemberClasses(ConfigurationClass configClass, SourceClass source) throws BeanDefinitionParsingException {
 		List<ConfigurationClass> inners = this.parseConfigurationInnerClass(configClass, source);
 		AnnotationAwareOrderComparator.sort(inners);
 		for (ConfigurationClass innerClz : inners) {
@@ -282,8 +279,7 @@ public class ConfigurationClassParser {
 		AnnotationMetadata annotationMetadata = parent.getAnnotationMetadata();
 		List<ConfigurationClass> list = new ArrayList<>();
 		for (Class<?> clz : declaredClasses) {
-			if (annotationMetadata.isAnnotatedForInnerClz(clz, Configuration.class)
-					&& !clz.getName().equals(configClass.getClassName())) {
+			if (annotationMetadata.isAnnotatedForInnerClz(clz, Configuration.class) && !clz.getName().equals(configClass.getClassName())) {
 				list.add(new ConfigurationClass(clz, null));
 			}
 		}
@@ -349,8 +345,8 @@ public class ConfigurationClassParser {
 	}
 
 	/**
-	 * @param configClass             - 代表当前检查类，如导入类、内部配置类
-	 * @param source                  - 为configClass的父类
+	 * @param configClass - 代表当前检查类，如导入类、内部配置类
+	 * @param source - 为configClass的父类
 	 * @param set
 	 * @param checkForCircularImports - 是否检查循环导入
 	 */
@@ -364,10 +360,7 @@ public class ConfigurationClassParser {
 			try {
 				// 检查是否又导入了之前已处理的类
 				for (SourceClass sourceClass : imports) {
-					AssetChainedImportOnStack(sourceClass);
-
-					// 将此导入类添加到导入类集合中
-					this.importStack.push(sourceClass);
+					assetChainedImportOnStack(sourceClass);
 				}
 			} catch (BeanDefinitionParsingException e) {
 				e.printStackTrace();
@@ -381,17 +374,14 @@ public class ConfigurationClassParser {
 					// 实例化导入类
 					ImportSelector selector = (ImportSelector) ReflectionUtils.instantiateClass(importClass);
 
-					Assert.isTrue(this.registry instanceof ConfigurableListableBeanFactory,
-							"'registry'必须实现ConfigurableListableBeanFactory接口");
+					Assert.isTrue(this.registry instanceof ConfigurableListableBeanFactory, "'registry'必须实现ConfigurableListableBeanFactory接口");
 					// 调用对应的Aware接口方法
 					selector.invokeAwareMethods(this.environment, (ConfigurableListableBeanFactory) this.registry);
 					if (this.deferredImportSelectorHandler != null && selector instanceof DeferredImportSelector) {
 						// deferredImportSelectorHandler：存储和处理延迟导入选择器
-						this.deferredImportSelectorHandler.handle(configClass, (DeferredImportSelector) selector,
-								this.conditionEvaluator);
+						this.deferredImportSelectorHandler.handle(configClass, (DeferredImportSelector) selector, this.conditionEvaluator);
 					} else { // 导入类未实现DeferredImportSelector
-						Set<SourceClass> importClassNames = selector.selectImports(configClass.getAnnotationMetadata(),
-								this.conditionEvaluator);
+						Set<SourceClass> importClassNames = selector.selectImports(configClass.getAnnotationMetadata(), this.conditionEvaluator);
 						// 解析当前导入类导入的类
 						for (SourceClass importSourceClass : importClassNames) {
 							processImports(configClass, importSourceClass, getImports(importSourceClass), false);
@@ -399,8 +389,8 @@ public class ConfigurationClassParser {
 					}
 				} else if (ImportBeanDefinitionRegistrar.class.isAssignableFrom(importClass)) {
 					// 实例化导入类
-					ImportBeanDefinitionRegistrar registrar = (ImportBeanDefinitionRegistrar) ReflectionUtils
-							.instantiateClass(importClass);
+					ImportBeanDefinitionRegistrar registrar = (ImportBeanDefinitionRegistrar) ReflectionUtils.instantiateClass(importClass);
+					
 					// 将此导入类实例和根类的注解信息映射保存到当前ConfigurationClass的importBeanDefinitionRegistrars容器中
 					configClass.addImportBeanDefinitionRegistrar(registrar, configClass.getAnnotationMetadata());
 				} else {
@@ -466,15 +456,22 @@ public class ConfigurationClassParser {
 	 * @param imports     - 通过@Import注解导入的类集合，在一次递归检查中检查类是不会存在于此集合的
 	 * @throws BeanDefinitionParsingException
 	 */
-	private void AssetChainedImportOnStack(SourceClass source) throws BeanDefinitionParsingException {
-		if (this.importStack.contains(source)) { // 条件成立则必定代表循环导入或使用@Import注解导入其他内部配置类
+	private void assetChainedImportOnStack(SourceClass sourceClass) throws BeanDefinitionParsingException {
+		if ( EnableConfigurationPropertiesRegistrar.class.equals(sourceClass.getSource()) ) {
+			return ;
+		}
+		
+		if (this.importStack.contains(sourceClass)) { // 条件成立则必定代表循环导入或使用@Import注解导入其他内部配置类
 			for (SourceClass importSourceClass : importStack) { // 迭代此集合确定循环导入的类
 				// 与导入类和内部配置类的Class对象比对
-				if (importSourceClass.equals(source)) {
+				if (importSourceClass.equals(sourceClass)) {
 					throw new BeanDefinitionParsingException("循环导入，导入类不唯一。by ：" + importSourceClass);
 				}
 			}
 		}
+		
+		// 将此导入类添加到导入类集合中
+		this.importStack.push(sourceClass);
 	}
 
 	public Collection<ConfigurationClass> getConfigurationClasses() {
@@ -494,8 +491,7 @@ public class ConfigurationClassParser {
 		 * @param importSelector     - 延迟导入选择器
 		 * @param conditionEvaluator
 		 */
-		public void handle(ConfigurationClass configClass, DeferredImportSelector importSelector,
-				ConditionEvaluator conditionEvaluator) {
+		public void handle(ConfigurationClass configClass, DeferredImportSelector importSelector, ConditionEvaluator conditionEvaluator) {
 			if (this.conditionEvaluator == null) {
 				this.conditionEvaluator = conditionEvaluator;
 			}
@@ -519,8 +515,7 @@ public class ConfigurationClassParser {
 				ConfigurationClass configurationClass = deferredImportSelectorHolder.getConfigurationClass();
 				DeferredImportSelector importSelector = deferredImportSelectorHolder.getImportSelector();
 				// 获得导入类的Class对象
-				Set<SourceClass> selectImports = importSelector
-						.selectImports(configurationClass.getAnnotationMetadata(), this.conditionEvaluator);
+				Set<SourceClass> selectImports = importSelector.selectImports(configurationClass.getAnnotationMetadata(), this.conditionEvaluator);
 				// 解析导入类
 				processImports(configurationClass, configurationClass.getSourceClass(), selectImports, true);
 			}

@@ -572,7 +572,7 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 		public ShortcutDependencyDescriptor(DependencyDescriptor original, String beanName) {
 			super(original);
 			this.shortcut = beanName;
-			this.requiredType = original.getDependencyType();
+			this.requiredType = original.getResolveDependencyType();
 		}
 
 		public ShortcutDependencyDescriptor(ExecutableParameter executableParameter, int index, String beanName,

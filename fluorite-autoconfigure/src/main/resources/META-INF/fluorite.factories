@@ -1,4 +1,8 @@
 # 自动配置类
 org.zy.fluorite.boot.annotation.EnableAutoConfiguration=\
 org.zy.fluorite.autoconfigure.ioc.BeanPostProcessorAutoConfiguration,\
-org.zy.fluorite.autoconfigure.aop.AopAutoConfiguration
+org.zy.fluorite.autoconfigure.aop.AopAutoConfiguration,\
+org.zy.fluorite.autoconfigure.web.embedded.EmbeddedWebServerFactoryCustomizerAutoConfiguration,\
+org.zy.fluorite.autoconfigure.web.server.ServletWebServerFactoryAutoConfiguration,\
+org.zy.fluorite.boot.devtools.autoconfigure.RestartConfiguration,\
+org.zy.fluorite.autoconfigure.web.servlet.MultipartAutoConfiguration

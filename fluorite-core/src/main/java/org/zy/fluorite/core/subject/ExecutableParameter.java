@@ -3,6 +3,7 @@ package org.zy.fluorite.core.subject;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +27,7 @@ public class ExecutableParameter {
 	private volatile List<Class<?>> parameterTypes = new ArrayList<>();
 
 	/** 参数泛型类型 */
-	private volatile List<Type> genericParameterTypes = new ArrayList<>();
+	private volatile List<Type[]> genericParameterTypes = new ArrayList<>();
 
 	/** 参数的注解 */
 	private volatile List<Annotation[]> parameterAnnotations = new ArrayList<>();
@@ -74,13 +75,21 @@ public class ExecutableParameter {
 		for (Parameter parameter : parameters) {
 			add(parameter);
 		}
+		
+		Type[] genericParameterTypes = executable.getGenericParameterTypes();
+		for (Type genericParameterType : genericParameterTypes) {
+			if ( genericParameterType instanceof ParameterizedType ) {
+				Type[] actualTypeArguments = ((ParameterizedType) genericParameterType).getActualTypeArguments();
+				this.genericParameterTypes.add(actualTypeArguments);
+			}
+		}
 	}
 
 	private void add(Parameter parameter) {
 		this.parameter.add(parameter);
 		this.parameterAnnotations.add(parameter.getAnnotations());
 		this.parameterTypes.add(parameter.getType());
-		this.genericParameterTypes.add(parameter.getClass().getGenericSuperclass());
+//		this.genericParameterTypes.add(parameter.getClass().getGenericSuperclass());
 	}
 
 	// get
@@ -93,7 +102,7 @@ public class ExecutableParameter {
 	public List<Class<?>> getParameterTypes() {
 		return parameterTypes;
 	}
-	public List<Type> getGenericParameterTypes() {
+	public List<Type[]> getGenericParameterTypes() {
 		return genericParameterTypes;
 	}
 	public List<Annotation[]> getParameterAnnotations() {

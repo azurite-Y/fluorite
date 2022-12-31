@@ -14,6 +14,7 @@ import org.zy.fluorite.beans.support.ConstructorArgumentValues;
 import org.zy.fluorite.beans.support.MethodOverride;
 import org.zy.fluorite.beans.support.MethodOverrides;
 import org.zy.fluorite.beans.support.MutablePropertyValues;
+import org.zy.fluorite.core.convert.ResolvableType;
 import org.zy.fluorite.core.interfaces.AnnotationMetadata;
 import org.zy.fluorite.core.interfaces.Resource;
 import org.zy.fluorite.core.utils.Assert;
@@ -449,5 +450,27 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	@Override
 	public String getBeanName() {
 		return this.beanName;
+	}
+	
+	/**
+	 * 返回此bean定义的可解析类型.
+	 * <p>
+	 * 此实现委托 {@link #getBeanClass()}.
+	 * @since 5.2
+	 */
+	@Override
+	public ResolvableType getResolvableType() {
+		return (hasBeanClass() ? ResolvableType.forClass(getBeanClass()) : ResolvableType.NONE);
+	}
+	
+	/**
+	 * 返回此定义是否指定bean类
+	 * 
+	 * @see #getBeanClass()
+	 * @see #setBeanClass(Class)
+	 * @see #resolveBeanClass(ClassLoader)
+	 */
+	public boolean hasBeanClass() {
+		return (this.beanClass instanceof Class);
 	}
 }

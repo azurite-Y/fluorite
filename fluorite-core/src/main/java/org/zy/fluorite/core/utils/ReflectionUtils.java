@@ -304,4 +304,9 @@ public class ReflectionUtils {
 		String capitalize = StringUtils.capitalize(propertyName);
 		return beanClass.getMethod(SET_PREFIX + capitalize, null);
 	}
+	
+	public static void clearCache() {
+		instantiateCache.clear();
+		classCache.clear();
+	}
 }

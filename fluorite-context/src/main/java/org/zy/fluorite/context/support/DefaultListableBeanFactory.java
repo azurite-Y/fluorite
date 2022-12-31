@@ -32,6 +32,7 @@ import org.zy.fluorite.beans.factory.support.InjectionPoint;
 import org.zy.fluorite.beans.factory.support.NullBean;
 import org.zy.fluorite.beans.interfaces.AutowireCandidateResolver;
 import org.zy.fluorite.beans.interfaces.BeanDefinition;
+import org.zy.fluorite.beans.support.AnnotationAwareOrderComparator;
 import org.zy.fluorite.core.convert.ResolvableType;
 import org.zy.fluorite.core.exception.BeansException;
 import org.zy.fluorite.core.exception.TypeMismatchException;
@@ -73,7 +74,7 @@ implements ConfigurableListableBeanFactory, BeanDefinitionRegistry {
 	private volatile List<String> beanDefinitionNames = new ArrayList<>(256);
 
 	/** 依赖项列表和数组的可选OrderComparator */
-	private Comparator<Object> dependencyComparator;
+	private Comparator<Object> dependencyComparator = AnnotationAwareOrderComparator.INSTANCE;
 
 	/** 在冻结配置的情况下缓存的bean定义名称数组 */
 	private volatile String[] frozenBeanDefinitionNames;
@@ -379,6 +380,27 @@ implements ConfigurableListableBeanFactory, BeanDefinitionRegistry {
 	}
 
 	@Override
+	public String[] getBeanNamesForTypeInclusionSingle(Class<?> type) {
+		String[] beanNamesForType = getBeanNamesForType(type, true, false);
+
+		List<String> list = new ArrayList<>();
+		Set<String> beanNameSet=this.singletonObjects.keySet();
+		Iterator<String> beanNameIterator=beanNameSet.iterator();
+		while( beanNameIterator.hasNext() ){
+			String beanName = beanNameIterator.next();
+			Object bean = this.singletonObjects.get(beanName);
+			if (type.isAssignableFrom(bean.getClass())) {
+				list.add(beanName);
+			}
+		}
+		
+		for (String beanName : beanNamesForType) {
+			list.add(beanName);
+		}
+		return list.toArray(new String[0]);
+	}
+	
+	@Override
 	public <T> Map<String, T> getBeansOfType(Class<T> type) throws BeansException {
 		return getBeansOfType(type, true, true);
 	}
@@ -487,7 +509,7 @@ implements ConfigurableListableBeanFactory, BeanDefinitionRegistry {
 			}
 
 		} else {
-			return getBean(candidateNames[0], args);
+			return candidateNames.length == 0 ? null : getBean(candidateNames[0], args);
 		}
 	}
 
@@ -540,13 +562,12 @@ implements ConfigurableListableBeanFactory, BeanDefinitionRegistry {
 	}
 
 	@Override
-	public Object resolveDependency(DependencyDescriptor descriptor, String requestingBeanName,
-			Set<String> autowiredBeanNames) throws BeansException {
+	public Object resolveDependency(DependencyDescriptor descriptor, String requestingBeanName, Set<String> autowiredBeanNames) throws BeansException {
 		descriptor.initParameterNameDiscovery(getParameterNameDiscoverer());
 		/**
-		 * 优先解析其他Bean注入接口
+		 * 优先解析其他Bean注入接口，
 		 */
-		Class<?> dependencyType = descriptor.getDependencyType();
+		Class<?> dependencyType = descriptor.getResolveDependencyType();
 		if (ObjectFactory.class == dependencyType || ObjectProvider.class == dependencyType) {
 			return new DependencyObjectProvider(descriptor, requestingBeanName);
 		} else {
@@ -561,15 +582,14 @@ implements ConfigurableListableBeanFactory, BeanDefinitionRegistry {
 	}
 
 	@Override
-	public Object doResolveDependency(DependencyDescriptor descriptor, String beanName,
-			Set<String> autowiredBeanNames) {
+	public Object doResolveDependency(DependencyDescriptor descriptor, String beanName, Set<String> autowiredBeanNames) {
 		InjectionPoint previousInjectionPoint = ConstructorResolver.setCurrentInjectionPoint(descriptor);
 		try {
 			Object shortcut = descriptor.resolveShortcut(this);
 			if (shortcut != null) {
 				return shortcut;
 			}
-			Class<?> type = descriptor.getDependencyType();
+			Class<?> type = descriptor.getProviderDependencyType();
 			// 确定是否为给定依赖项建议默认值。默认实现只返回空值
 			Object value = getAutowireCandidateResolver(this).getSuggestedValue(descriptor);
 			if (value != null) {
@@ -582,6 +602,11 @@ implements ConfigurableListableBeanFactory, BeanDefinitionRegistry {
 					throw new TypeMismatchException("默认值类型转换异常，类型[" + value + "]不可转换为[" + type + "]类型");
 				}
 			}
+			
+			Object multipleBeans = resolveMultipleBeans(descriptor, beanName, autowiredBeanNames);
+			if (multipleBeans != null) {
+				return multipleBeans;
+			}
 
 			List<String> matchingBeans = findAutowireCandidates(beanName, type, descriptor);
 			if (matchingBeans.isEmpty()) {
@@ -590,7 +615,7 @@ implements ConfigurableListableBeanFactory, BeanDefinitionRegistry {
 						return this;
 					}
 					// 对于无法解析的依赖项，引发BeanNotOfRequiredTypeException
-					throw new BeanNotOfRequiredTypeException("无法解析的依赖项，by：" + descriptor.getDependencyType().getName() + " ,beanName：" + beanName);
+					throw new BeanNotOfRequiredTypeException("无法解析的依赖项(必选依赖项在容器中无任何实例)，by：" + type.getName() + " ,beanName：" + beanName);
 				}
 				return null;
 			}
@@ -604,8 +629,7 @@ implements ConfigurableListableBeanFactory, BeanDefinitionRegistry {
 				if (Assert.hasText(autowiredBeanName)) {
 					if (descriptor.isRequired()) {
 						// 对于无法解析的依赖项，引发BeanNotOfRequiredTypeException
-						throw new BeanNotOfRequiredTypeException(
-								"无法解析的依赖项，by：" + descriptor.getDependencyType().getName());
+						throw new BeanNotOfRequiredTypeException("无法解析的依赖项，by：" + descriptor.getResolveDependencyType().getName());
 					}
 					return null;
 				}
@@ -627,7 +651,7 @@ implements ConfigurableListableBeanFactory, BeanDefinitionRegistry {
 			if (instanceCandidate instanceof NullBean) {
 				if (descriptor.isRequired()) {
 					// 对于无法解析的依赖项，引发BeanNotOfRequiredTypeException
-					throw new BeanNotOfRequiredTypeException("无法解析的依赖项，by：" + descriptor.getDependencyType().getName());
+					throw new BeanNotOfRequiredTypeException("无法解析的依赖项，by：" + descriptor.getResolveDependencyType().getName());
 				}
 				instanceCandidate = null;
 			}
@@ -637,6 +661,26 @@ implements ConfigurableListableBeanFactory, BeanDefinitionRegistry {
 		}
 	}
 
+	private Object resolveMultipleBeans(DependencyDescriptor descriptor, String beanName, Set<String> autowiredBeanNames) {
+		final Class<?> type = descriptor.getProviderDependencyType();
+
+		if (descriptor instanceof StreamDependencyDescriptor) {
+			List<String> matchingBeans = findAutowireCandidates(beanName, type, descriptor);
+			if (autowiredBeanNames != null) {
+				autowiredBeanNames.addAll(matchingBeans);
+			}
+			
+			Stream<Object> stream = matchingBeans.stream().map(name -> descriptor.resolveCandidate(name, type, this))
+					.filter(bean -> !(bean instanceof NullBean));
+			
+			if (((StreamDependencyDescriptor) descriptor).isOrdered()) {
+				stream = stream.sorted(this.dependencyComparator);
+			}
+			return stream;
+		}
+		return null;
+	}
+	
 	/**
 	 * 确定最合适的Bean名称或bean对象
 	 * 
@@ -646,7 +690,7 @@ implements ConfigurableListableBeanFactory, BeanDefinitionRegistry {
 	 * @return
 	 */
 	private String determineAutowireCandidate(List<String> candidates, DependencyDescriptor descriptor) {
-		Class<?> requiredType = descriptor.getDependencyType();
+		Class<?> requiredType = descriptor.getResolveDependencyType();
 		String primaryCandidate = determinePrimaryCandidate(candidates, requiredType);
 		if (primaryCandidate != null) {
 			return primaryCandidate;
@@ -786,6 +830,7 @@ implements ConfigurableListableBeanFactory, BeanDefinitionRegistry {
 			this.beanName = beanName;
 		}
 
+		
 		@Override
 		public Object getObject() throws BeansException {
 			Object result = doResolveDependency(this.descriptor, this.beanName, null);
@@ -797,10 +842,15 @@ implements ConfigurableListableBeanFactory, BeanDefinitionRegistry {
 
 		@Override
 		public Object getObject(final Object... args) throws BeansException {
-			DependencyDescriptor descriptorToUse = new DependencyDescriptor(descriptor);
+			DependencyDescriptor descriptorToUse = new DependencyDescriptor(this.descriptor) {
+				@Override
+				public Object resolveCandidate(String beanName, Class<?> requiredType, BeanFactory beanFactory) {
+					return beanFactory.getBean(beanName, args);
+				}
+			};
 			Object result = doResolveDependency(descriptorToUse, this.beanName, null);
 			if (result == null) {
-				throw new NoSuchBeanDefinitionException(this.descriptor.getSourceClass().getName());
+				throw new NoSuchBeanDefinitionException(this.descriptor.getProviderDependencyType());
 			}
 			return result;
 		}

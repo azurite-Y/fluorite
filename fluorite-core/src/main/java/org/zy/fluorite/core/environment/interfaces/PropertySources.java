@@ -3,6 +3,8 @@ package org.zy.fluorite.core.environment.interfaces;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.zy.fluorite.core.interfaces.ConversionServiceStrategy;
+
 /**
  * @DateTime 2020年6月16日 下午4:00:01;
  * @author zy(azurite-Y);
@@ -25,4 +27,9 @@ public interface PropertySources extends Iterable<PropertySource<?>> {
 	 * 根据指定的名称获得对应的属性源包装类对象
 	 */
 	PropertySource<?> get(String name);
+	
+	/**
+	 * 获取类型转换策略
+	 */
+	ConversionServiceStrategy getConversionServiceStrategy();
 }

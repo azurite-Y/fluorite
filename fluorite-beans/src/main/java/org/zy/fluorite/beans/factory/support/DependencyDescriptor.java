@@ -5,6 +5,7 @@ import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
 
 import org.zy.fluorite.beans.factory.interfaces.BeanFactory;
+import org.zy.fluorite.core.exception.BeansException;
 import org.zy.fluorite.core.subject.ExecutableParameter;
 
 /**
@@ -68,5 +69,22 @@ public class DependencyDescriptor extends InjectionPoint implements Serializable
 	 */
 	public Object resolveShortcut(BeanFactory beanFactory) {
 		return null;
+	}
+	
+	/**
+	 * 将指定的bean名称解析为给定工厂的bean实例，作为此依赖项的匹配算法的候选结果。
+	 * <p>
+	 * 默认实现调用 {@link BeanFactory#getBean(String)}. 子类可以提供额外的参数或其他自定义。
+	 * 
+	 * @param beanName -bean名称，作为此依赖项的候选结果
+	 * @param requiredType - bean的预期类型(作为断言)
+	 * @param beanFactory - 关联工厂
+	 * @return bean实例(从不为空)
+	 * 
+	 * @throws BeansException - 如果得不到 bean
+	 * @see BeanFactory#getBean(String)
+	 */
+	public Object resolveCandidate(String beanName, Class<?> requiredType, BeanFactory beanFactory) throws BeansException {
+		return beanFactory.getBean(beanName);
 	}
 }

@@ -160,7 +160,7 @@ public class DefaultLifecycleProcessor implements LifecycleProcessor, BeanFactor
 		ConfigurableListableBeanFactory beanFactory = getBeanFactory();
 		Map<String, Lifecycle> beans = new LinkedHashMap<>();
 		// 获得实现Lifecycle接口的beanName
-		String[] beanNames = beanFactory.getBeanNamesForType(Lifecycle.class, false, false);
+		String[] beanNames = beanFactory.getBeanNamesForTypeInclusionSingle(Lifecycle.class);
 		for (String beanName : beanNames) {
 			String beanNameToRegister = BeanFactoryUtils.transformedBeanName(beanName);
 			boolean isFactoryBean = beanFactory.isFactoryBean(beanNameToRegister);

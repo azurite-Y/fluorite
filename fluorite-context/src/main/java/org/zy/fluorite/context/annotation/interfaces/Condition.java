@@ -21,7 +21,7 @@ public interface Condition {
 	 * 综上所述在此方法中需积极的解析其处理的注解，才能有效的完成条件判断任务。
 	 * @param context    - 条件上下文
 	 * @param attributes - 类注解或方法直接的AnnotationAttributes对象。根据从属不同而此方法匹配的意义也不尽相同。
-	 * @return 如果条件匹配并且组件可以注册，则为true；如果要否决带注释组件的注册，则为false
+	 * @return 如果条件匹配并且组件可以注册，则为true；如果要否决组件的注册，则为false
 	 */
 	boolean matcher(ConditionContext context, AnnotationAttributes attributes);
 }

@@ -460,6 +460,12 @@ public abstract class AbstractApplicationContext implements ConfigurableApplicat
 	}
 
 	@Override
+	public String[] getBeanNamesForTypeInclusionSingle(Class<?> type) {
+		assertBeanFactoryActive();
+		return getBeanFactory().getBeanNamesForTypeInclusionSingle(type);
+	}
+	
+	@Override
 	public String[] getBeanNamesForType(Class<?> type, boolean includeNonSingletons, boolean allowEagerInit) {
 		assertBeanFactoryActive();
 		return getBeanFactory().getBeanNamesForType(type, includeNonSingletons, allowEagerInit);

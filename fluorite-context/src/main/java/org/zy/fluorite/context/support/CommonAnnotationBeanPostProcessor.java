@@ -318,7 +318,7 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 			this.lookupType = lookupType;
 		}
 
-		public Class<?> getDependencyType() {
+		public Class<?> getResolveDependencyType() {
 			return this.lookupType;
 		}
 	}

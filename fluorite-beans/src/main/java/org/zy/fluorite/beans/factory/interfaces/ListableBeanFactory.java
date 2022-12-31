@@ -47,6 +47,11 @@ public interface ListableBeanFactory  extends BeanFactory{
 	 * 根据类型获得工厂中BeanDefinition的beanName数组
 	 */
 	String[] getBeanNamesForType(Class<?> type);
+	
+	/**
+	 * 根据类型获得工厂中符合的beanName数组, 包括已使用代码注册的单例
+	 */
+	String[] getBeanNamesForTypeInclusionSingle(Class<?> type);
 
 	/**
 	 * 根据类型获得工厂中BeanDefinition的beanName数组

@@ -28,6 +28,12 @@
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.zy.moonStone</groupId>
+			<artifactId>MoonStone-Core</artifactId>
+			<optional>true</optional>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 		</dependency>

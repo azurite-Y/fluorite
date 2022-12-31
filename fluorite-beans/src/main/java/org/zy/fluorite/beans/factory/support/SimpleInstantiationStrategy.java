@@ -1,6 +1,7 @@
 package org.zy.fluorite.beans.factory.support;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
@@ -87,7 +88,7 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 				 */
 				Object result = factoryMethod.invoke(factoryBean, args);
 				DebugUtils.log(logger, "通过工厂方法创建实例成功，by name："+beanName+"，factoryMethod："
-						+factoryMethod.getName()+"，factoryBean："+factoryBean.getClass().getName()+ "，args："+ (args != null ? Arrays.asList(args) : args));
+						+factoryMethod.getName()+"，factoryBean："+factoryBean.getClass().getSimpleName()+ " ，args："+ (args != null ? Arrays.asList(args) : args));
 				if (result == null) {
 					result = new NullBean();
 				}
@@ -99,10 +100,11 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 					currentlyInvokedFactoryMethod.remove();
 				}
 			}
+		} catch (InvocationTargetException e) {
+			throw new BeanInstantiationException("工厂方法调用异常，by method ：" + factoryMethod + "args: " +(args != null ? Arrays.asList(args) : args) ,e.getCause());
 		} catch (Exception ex) {
-			throw new BeanInstantiationException("工厂方法调用异常，by method ：" + factoryMethod,ex);
-		} 
-
+			throw new BeanInstantiationException("工厂方法调用异常，by method ：" + factoryMethod + "args: " +(args != null ? Arrays.asList(args) : args) ,ex);
+		}
 	}
 
 	private Object instantiateWithMethodInjection(RootBeanDefinition bd, String beanName, BeanFactory owner,

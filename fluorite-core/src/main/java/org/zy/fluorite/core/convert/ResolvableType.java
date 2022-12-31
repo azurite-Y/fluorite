@@ -4,6 +4,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 
+import org.zy.fluorite.core.utils.Assert;
+
 /**
  * @author: zy(azurite-Y);
  * @DateTime: 2020年6月7日 下午5:19:20;
@@ -47,9 +49,11 @@ public class ResolvableType {
 	/**
 	 * 根据指定Class创建一个ResolvableType对象
 	 * 
+	 * @apiNote 传入Class对象 获取的泛型只能获取到父类和接口的泛型，而无法获取当前Class的泛型。
+	 * 若无获取则使用 {@link ResolvableType#forClass(Type) } 方法
 	 * @param requiredType
-	 * @return
-	 */
+	 * @return 一个 ResolvableType 实例
+	 */ 
 	public static ResolvableType forClass(Class<?> requiredType) {
 		return new ResolvableType(requiredType);
 	}
@@ -104,6 +108,8 @@ public class ResolvableType {
 				generics = new ResolvableType[actualTypeArguments.length];
 				for (int i = 0; i < actualTypeArguments.length; i++) {
 					generics[i] = ResolvableType.forClass(actualTypeArguments[i]);
+					// 递归解析
+					generics[i].getGenerics();
 				}
 			}
 		}
@@ -162,6 +168,7 @@ public class ResolvableType {
 
 	/**
 	 * 验证当期类是否实现了指定接口，实现了则返回此接口类型的ResolvableType对象，未实现则继续检查父类
+	 * 
 	 * @param type
 	 * @return
 	 */
@@ -217,7 +224,7 @@ public class ResolvableType {
 	}
 
 	/**
-	 * 该类型是否是指定类型本身或其父类型
+	 * 判断当前类型是否是指定类型本身或其父类型
 	 * 
 	 * @param type
 	 * @return true - 是指定类型本身或父类型
@@ -238,6 +245,20 @@ public class ResolvableType {
 						: this.isAssignableFrom(obj.getClass()));
 	}
 
+	/**
+	 * 返回具有给定实现类的指定基类型(接口或基类)的 {@link ResolvableType} 。例如: {@code ResolvableType.forClass(List.class, MyArrayList.class)}
+	 * 
+	 * @param baseType - 基类型(不能为空)
+	 * @param implementationClass - 实现类
+	 * @return 给定实现类支持的指定基类型的 {@link ResolvableType} 
+	 * 
+	 * @see #forClass(Class)
+	 */
+	public static ResolvableType forClass(Class<?> baseType, Class<?> implementationClass) {
+		Assert.notNull(baseType, "baseType 不能为 null");
+		return forClass(implementationClass).as(baseType);
+	}
+	
 	@Override
 	public String toString() {
 		return "ResolvableType [requiredType=" + requiredType + ", superType=" + superType + ", interfaces="

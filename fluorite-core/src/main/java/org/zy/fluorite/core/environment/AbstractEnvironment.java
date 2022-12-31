@@ -10,9 +10,11 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.zy.fluorite.core.convert.SimpleConversionServiceStrategy;
 import org.zy.fluorite.core.environment.interfaces.ConfigurableEnvironment;
 import org.zy.fluorite.core.environment.interfaces.PropertySource;
 import org.zy.fluorite.core.environment.interfaces.PropertySource.SimplePropertySource;
+import org.zy.fluorite.core.interfaces.ConversionServiceStrategy;
 import org.zy.fluorite.core.utils.Assert;
 import org.zy.fluorite.core.utils.CollectionUtils;
 import org.zy.fluorite.core.utils.DebugUtils;
@@ -27,7 +29,9 @@ import org.zy.fluorite.core.utils.StringUtils;
 public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 	
-	protected final MutablePropertySources propertySources = new MutablePropertySources();
+	private ConversionServiceStrategy conversionServiceStrategy = new SimpleConversionServiceStrategy();
+	
+	protected final MutablePropertySources propertySources = new MutablePropertySources(conversionServiceStrategy);
 	
 	protected final Set<String> activeProfiles = new LinkedHashSet<>();
 	

@@ -12,8 +12,8 @@ import org.zy.fluorite.beans.factory.interfaces.BeanNameGenerator;
 import org.zy.fluorite.beans.factory.support.BeanMethod;
 import org.zy.fluorite.beans.interfaces.BeanDefinition;
 import org.zy.fluorite.beans.support.AnnotationMetadataHolder;
-import org.zy.fluorite.context.annotation.interfaces.ImportBeanDefinitionRegistrar;
 import org.zy.fluorite.context.annotation.interfaces.ConfigurationCondition.ConfigurationPhase;
+import org.zy.fluorite.context.annotation.interfaces.ImportBeanDefinitionRegistrar;
 import org.zy.fluorite.core.annotation.Bean;
 import org.zy.fluorite.core.environment.interfaces.Environment;
 import org.zy.fluorite.core.interfaces.AnnotationMetadata;
@@ -149,6 +149,8 @@ public class ConfigurationClassBeanDefinitionReader {
 		rootBeanDefinition.setBeanName(beanName);
 		rootBeanDefinition.setFactoryBeanName(factoryBeanName);
 		rootBeanDefinition.setFactoryMethodReturnType(beanMethodReturnType);
+		rootBeanDefinition.setResolvableTypeFactoryMethodReturnType(method.getGenericReturnType());
+		
 		// 保存已解析的工厂方法对象
 		rootBeanDefinition.setResolvedConstructorOrFactoryMethod(method);
 		rootBeanDefinition.setFactoryMethodUnique(true);

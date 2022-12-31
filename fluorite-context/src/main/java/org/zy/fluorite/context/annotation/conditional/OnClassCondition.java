@@ -63,8 +63,9 @@ public class OnClassCondition implements ConfigurationCondition {
 		
 		for (String clzName : types) {
 			try {
-				Class.forName(clzName);
-			} catch (ClassNotFoundException e) {
+				Class.forName(clzName, false, ClassLoader.getSystemClassLoader());
+//				Class.forName(clzName);
+			} catch (Throwable e) {
 				return false;
 			}
 		}

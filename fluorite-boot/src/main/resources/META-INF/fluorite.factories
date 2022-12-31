@@ -9,4 +9,5 @@ org.zy.fluorite.context.support.initializer.ConfigurationWarningsApplicationCont
 org.zy.fluorite.context.event.interfaces.ApplicationListener=\
 org.zy.fluorite.boot.context.event.listener.DelegatingApplicationListener,\
 org.zy.fluorite.boot.context.event.listener.ClasspathLoggingApplicationListener,\
-org.zy.fluorite.boot.context.event.listener.LoggingApplicationListener
+org.zy.fluorite.boot.context.event.listener.LoggingApplicationListener,\
+org.zy.fluorite.boot.devtools.restart.RestartApplicationListener

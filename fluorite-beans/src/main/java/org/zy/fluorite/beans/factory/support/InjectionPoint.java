@@ -5,9 +5,12 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 
 import org.zy.fluorite.core.interfaces.ParameterNameDiscoverer;
+import org.zy.fluorite.core.interfaces.function.ObjectFactory;
+import org.zy.fluorite.core.interfaces.function.ObjectProvider;
 import org.zy.fluorite.core.subject.ExecutableParameter;
 import org.zy.fluorite.core.utils.Assert;
 
@@ -86,11 +89,28 @@ public class InjectionPoint {
 //	}
 
 	/**
-	 * 返回由基础字段或方法/构造函数参数声明的类型，指带注入类型
+	 * 返回由基础字段或方法/构造函数参数声明的类型
+	 * 
 	 * @param parameIndex - 获取参数的下标索引
 	 */
-	public Class<?> getDependencyType() {
-		return (this.field != null ? this.field.getType() : this.executableParameter.getParameterType(index));
+	public Class<?> getResolveDependencyType() {
+		return this.field != null ? this.field.getType() : this.executableParameter.getParameterType(index) ;
+	}
+	
+	/**
+	 * 返回由基础字段或方法/构造函数参数声明的类型，适配 {@link ObjectFactory } 依赖的解析
+	 * 
+	 * @param parameIndex - 获取参数的下标索引
+	 */
+	public Class<?> getProviderDependencyType() {
+		if (this.field != null) {
+			return this.field.getType();
+		} else if ( ObjectFactory.class == this.executableParameter.getParameterType(index) || ObjectProvider.class == this.executableParameter.getParameterType(index) ) {
+			Type[] types = this.executableParameter.getGenericParameterTypes().get(index);
+			return (Class<?>) types[0];
+		} else {
+			return this.executableParameter.getParameterType(index);
+		}
 	}
 
 	public void initParameterNameDiscovery(ParameterNameDiscoverer parameterNameDiscoverer) {

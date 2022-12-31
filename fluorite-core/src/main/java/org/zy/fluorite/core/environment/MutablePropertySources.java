@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.zy.fluorite.core.environment.interfaces.PropertySource;
 import org.zy.fluorite.core.environment.interfaces.PropertySources;
 import org.zy.fluorite.core.exception.MissingRequiredPropertiesException;
+import org.zy.fluorite.core.interfaces.ConversionServiceStrategy;
 import org.zy.fluorite.core.interfaces.function.ActiveFunction;
 import org.zy.fluorite.core.utils.Assert;
 
@@ -30,11 +31,14 @@ public class MutablePropertySources implements PropertySources {
 
 	private final Set<String> requiredProperties = new LinkedHashSet<>();
 
-	public MutablePropertySources() {
+	private ConversionServiceStrategy conversionServiceStrategy;
+	
+	public MutablePropertySources(ConversionServiceStrategy conversionServiceStrategy) {
+		this.conversionServiceStrategy = conversionServiceStrategy;
 	}
 
 	public MutablePropertySources(PropertySources propertySources) {
-		this();
+		this(propertySources.getConversionServiceStrategy());
 		for (PropertySource<?> propertySource : propertySources) {
 			addLast(propertySource);
 		}
@@ -222,10 +226,10 @@ public class MutablePropertySources implements PropertySources {
 	 * @param value
 	 * @param clz
 	 * @return
+	 * @throws Exception 
 	 */
-	@SuppressWarnings("unchecked")
 	private <T> T convertValueIfNecessary(Object value, Class<T> clz) {
-		return (T) value;
+		return (T) conversionServiceStrategy.convert(value, clz);
 	}
 
 	private void logKeyFound(String key, PropertySource<?> propertySource, Object value) {
@@ -298,5 +302,10 @@ public class MutablePropertySources implements PropertySources {
 				new MissingRequiredPropertiesException("缺少必要的属性键，by：" + key).printStackTrace();
 			}
 		}
+	}
+
+	@Override
+	public ConversionServiceStrategy getConversionServiceStrategy() {
+		return this.conversionServiceStrategy;
 	}
 }
