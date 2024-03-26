@@ -66,7 +66,6 @@ public class AnnotationMetadataHolder implements AnnotationMetadata {
 			try {
 				if (method.getAnnotations().length == 0) continue;
 			} catch (ArrayStoreException e) {
-				System.out.println("asd");
 				e.printStackTrace();
 			}
 			this.standardMethodMetadataMap.put(method, new StandardMethodMetadata(method));
@@ -104,7 +103,6 @@ public class AnnotationMetadataHolder implements AnnotationMetadata {
 			try {
 				if (innerClz.getAnnotations().length == 0) continue;
 			} catch (ArrayStoreException e) {
-				System.out.println("asd");
 				e.printStackTrace();
 			}
 			this.standardInnerClassMetadataMap.put(innerClz, new AnnotationMetadataHolder(innerClz));

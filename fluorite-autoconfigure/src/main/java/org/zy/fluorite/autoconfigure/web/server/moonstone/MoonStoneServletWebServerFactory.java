@@ -21,37 +21,38 @@ import org.zy.fluorite.autoconfigure.web.server.AbstractServletWebServerFactory;
 import org.zy.fluorite.autoconfigure.web.server.ErrorPage;
 import org.zy.fluorite.autoconfigure.web.server.MimeMappings;
 import org.zy.fluorite.autoconfigure.web.server.moonstone.interfaces.ConfigurableMoonStoneWebServerFactory;
-import org.zy.fluorite.autoconfigure.web.server.moonstone.interfaces.MoonStoneConnectorCustomizer;
-import org.zy.fluorite.autoconfigure.web.server.moonstone.interfaces.MoonStoneContextCustomizer;
-import org.zy.fluorite.autoconfigure.web.server.moonstone.interfaces.MoonStoneProtocolHandlerCustomizer;
+import org.zy.fluorite.autoconfigure.web.server.moonstone.interfaces.MoonstoneConnectorCustomizer;
+import org.zy.fluorite.autoconfigure.web.server.moonstone.interfaces.MoonstoneContextCustomizer;
+import org.zy.fluorite.autoconfigure.web.server.moonstone.interfaces.MoonstoneProtocolHandlerCustomizer;
 import org.zy.fluorite.autoconfigure.web.servlet.interfaces.ServletContextInitializer;
 import org.zy.fluorite.core.utils.Assert;
 import org.zy.fluorite.core.utils.ClassUtils;
 import org.zy.fluorite.core.utils.LambdaSafe;
 import org.zy.fluorite.web.server.interfaces.WebServer;
-import org.zy.moonStone.core.LifecycleEvent;
-import org.zy.moonStone.core.connector.Connector;
-import org.zy.moonStone.core.http.AbstractProtocol;
-import org.zy.moonStone.core.interfaces.connector.ProtocolHandler;
-import org.zy.moonStone.core.interfaces.container.Context;
-import org.zy.moonStone.core.interfaces.container.Engine;
-import org.zy.moonStone.core.interfaces.container.Host;
-import org.zy.moonStone.core.interfaces.container.Lifecycle;
-import org.zy.moonStone.core.interfaces.container.LifecycleListener;
-import org.zy.moonStone.core.interfaces.container.Valve;
-import org.zy.moonStone.core.interfaces.container.Wrapper;
-import org.zy.moonStone.core.loaer.WebappLoader;
-import org.zy.moonStone.core.session.StandardManager;
-import org.zy.moonStone.core.session.interfaces.Manager;
-import org.zy.moonStone.core.startup.MoonStone;
-import org.zy.moonStone.core.startup.MoonStone.FixContextListener;
+import org.zy.moonstone.core.LifecycleEvent;
+import org.zy.moonstone.core.connector.Connector;
+import org.zy.moonstone.core.http.AbstractProtocol;
+import org.zy.moonstone.core.interfaces.connector.ProtocolHandler;
+import org.zy.moonstone.core.interfaces.container.Context;
+import org.zy.moonstone.core.interfaces.container.Engine;
+import org.zy.moonstone.core.interfaces.container.Host;
+import org.zy.moonstone.core.interfaces.container.Lifecycle;
+import org.zy.moonstone.core.interfaces.container.LifecycleListener;
+import org.zy.moonstone.core.interfaces.container.Valve;
+import org.zy.moonstone.core.interfaces.container.Wrapper;
+import org.zy.moonstone.core.loaer.WebappLoader;
+import org.zy.moonstone.core.session.StandardManager;
+import org.zy.moonstone.core.session.interfaces.Manager;
+import org.zy.moonstone.core.startup.Moonstone;
+import org.zy.moonstone.core.startup.Moonstone.FixContextListener;
+import org.zy.moonstone.core.util.CharsetMapper;
 
 /**
  * @dateTime 2021年12月23日;
  * @author zy(azurite-Y);
  * @description
  */
-public class MoonStoneServletWebServerFactory extends AbstractServletWebServerFactory implements ConfigurableMoonStoneWebServerFactory {
+public class MoonstoneServletWebServerFactory extends AbstractServletWebServerFactory implements ConfigurableMoonStoneWebServerFactory {
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
@@ -61,7 +62,7 @@ public class MoonStoneServletWebServerFactory extends AbstractServletWebServerFa
 	/**
 	 * 使用的默认协议处理器的类名.
 	 */
-	public static final String DEFAULT_PROTOCOL = "org.zy.moonStone.core.http.Http11NioProtocol";
+	public static final String DEFAULT_PROTOCOL = "org.zy.moonstone.core.http.Http11NioProtocol";
 
 //	private ResourceLoader resourceLoader;
 	
@@ -77,11 +78,11 @@ public class MoonStoneServletWebServerFactory extends AbstractServletWebServerFa
 
 	private List<LifecycleListener> contextLifecycleListeners = new ArrayList<>();
 
-	private Set<MoonStoneContextCustomizer> moonStoneContextCustomizers = new LinkedHashSet<>();
+	private Set<MoonstoneContextCustomizer> moonstoneContextCustomizers = new LinkedHashSet<>();
 
-	private Set<MoonStoneConnectorCustomizer> moonStoneConnectorCustomizers = new LinkedHashSet<>();
+	private Set<MoonstoneConnectorCustomizer> moonstoneConnectorCustomizers = new LinkedHashSet<>();
 
-	private Set<MoonStoneProtocolHandlerCustomizer<?>> moonStoneProtocolHandlerCustomizers = new LinkedHashSet<>();
+	private Set<MoonstoneProtocolHandlerCustomizer<?>> moonstoneProtocolHandlerCustomizers = new LinkedHashSet<>();
 
 	private final List<Connector> additionalMoonStoneConnectors = new ArrayList<>();
 
@@ -96,23 +97,22 @@ public class MoonStoneServletWebServerFactory extends AbstractServletWebServerFa
 	private MultipartConfigElement multipartConfigElement; 
 	
 	
-	public MoonStoneServletWebServerFactory() {}
+	public MoonstoneServletWebServerFactory() {}
 
 	
 	@Override
 	public WebServer getWebServer(ServletContextInitializer... initializers) {
-		MoonStone moonStone = new MoonStone();
-		moonStone.setAppBaseDir(appBaseDir);
+		Moonstone moonstone = new Moonstone();
+		moonstone.setAppBaseDir(appBaseDir);
 		
 		// 创建MoonStone使用的目录
-		
-		File baseDir = (this.baseDirectory != null) ? 
+		File baseDir = (this.baseDirectory != null) ?
 				this.baseDirectory : 
 				(useTempBaseDir) ? createTempDir("moonStone") : new File(ClassLoader.getSystemResource("").getFile());
 		
 		String baseDirAbsolutePath = baseDir.getAbsolutePath();
 		// 设置 MoonStone 的根目录
-		moonStone.setBaseDir(baseDirAbsolutePath);
+		moonstone.setBaseDir(baseDirAbsolutePath);
 		if (logger.isDebugEnabled()) {
 			logger.debug("baseDir: {}", baseDirAbsolutePath);
 		}
@@ -123,25 +123,25 @@ public class MoonStoneServletWebServerFactory extends AbstractServletWebServerFa
 		 * 创建服务器和服务对象
 		 * 将新连接器添加到已定义的连接器集，并将其与此服务的容器相关联
 		 */
-		moonStone.getService().addConnector(connector);
+		moonstone.getService().addConnector(connector);
 		
 		customizeConnector(connector);
 		
-		moonStone.setConnector(connector);
+		moonstone.setConnector(connector);
 		// 创建一个Host接口实现StandardHost的实例并设置”localhost”为name属性，然后保存到Engine(访问引擎)中，后关闭自动部署
-		Host host = moonStone.getHost();
+		Host host = moonstone.getHost();
 		host.setAutoDeploy(false);
 		
 		// 设置这个容器上的execute方法的调用与其子容器之间的延迟 10
-		configureEngine(moonStone.getEngine());
+		configureEngine(moonstone.getEngine());
 		
 		for (Connector additionalConnector : this.additionalMoonStoneConnectors) {
-			moonStone.getService().addConnector(additionalConnector);
+			moonstone.getService().addConnector(additionalConnector);
 		}
 		
-		prepareContext(moonStone.getHost(), initializers);
+		prepareContext(moonstone.getHost(), initializers);
 		
-		return getMoonStoneWebServer(moonStone);
+		return getMoonStoneWebServer(moonstone);
 	}
 
 	/**
@@ -170,7 +170,7 @@ public class MoonStoneServletWebServerFactory extends AbstractServletWebServerFa
 		if (getSsl() != null && getSsl().isEnabled()) {
 			customizeSsl(connector);
 		}
-		MoonStoneConnectorCustomizer compression = new CompressionConnectorCustomizer(getCompression());
+		MoonstoneConnectorCustomizer compression = new CompressionConnectorCustomizer(getCompression());
 		
 		compression.customize(connector);
 		
@@ -183,7 +183,7 @@ public class MoonStoneServletWebServerFactory extends AbstractServletWebServerFa
 		 * (acceptCount)当所有可能的请求处理线程都在使用时，传入连接请求的最大队列长度。设置服务器套接字的连接数
 		 * (processorCache)将保留在缓存中并在后续请求中重用的空闲处理器的最大数量。当设置为-1时，缓存将不受限制，理论上最大大小等于最大连接数。 (processorCache)
 		 */	
-		for (MoonStoneConnectorCustomizer customizer : this.moonStoneConnectorCustomizers) {
+		for (MoonstoneConnectorCustomizer customizer : this.moonstoneConnectorCustomizers) {
 			customizer.customize(connector);
 		}
 	}
@@ -196,7 +196,7 @@ public class MoonStoneServletWebServerFactory extends AbstractServletWebServerFa
 	
 	@SuppressWarnings("unchecked")
 	private void invokeProtocolHandlerCustomizers(ProtocolHandler protocolHandler) {
-		LambdaSafe.callbacks(MoonStoneProtocolHandlerCustomizer.class, this.moonStoneProtocolHandlerCustomizers, protocolHandler)
+		LambdaSafe.callbacks(MoonstoneProtocolHandlerCustomizer.class, this.moonstoneProtocolHandlerCustomizers, protocolHandler)
 			.invoke((customizer) -> customizer.customize(protocolHandler));
 	}
 	
@@ -210,7 +210,7 @@ public class MoonStoneServletWebServerFactory extends AbstractServletWebServerFa
 	}
 	
 	protected void prepareContext(Host host, ServletContextInitializer[] initializers) {
-		MoonStoneEmbeddedContext context = new MoonStoneEmbeddedContext();
+		MoonstoneEmbeddedContext context = new MoonstoneEmbeddedContext();
 		// 设置一个描述此容器的名称字符串。在属于特定父容器的子容器集中，容器名称必须是惟一的。【"”】
 		context.setName(getContextPath());
 		// 设置这个web应用程序的显示名称
@@ -253,7 +253,7 @@ public class MoonStoneServletWebServerFactory extends AbstractServletWebServerFa
 		// 构造一个新的WebappLoader，将指定的类加载器定义为我们最终创建的类加载器的父类
 		WebappLoader loader = new WebappLoader();
 		// MoonStoneEmbeddedWebappClassLoader：MoonStone 的ParallelWebappClassLoader的扩展，不考虑系统类加载器。这是为了确保始终使用任何自定义上下文类装入器(就像某些可执行的存档一样)所必需的。
-		loader.setLoaderClass(MoonStoneEmbeddedWebappClassLoader.class.getName());
+		loader.setLoaderClass(MoonstoneEmbeddedWebappClassLoader.class.getName());
 		// 首先搜索本地库，搜索无果在委托父类
 		loader.setDelegate(false);
 		
@@ -273,8 +273,8 @@ public class MoonStoneServletWebServerFactory extends AbstractServletWebServerFa
 		postProcessContext(context);
 	}
 
-	protected MoonStoneWebServer getMoonStoneWebServer(MoonStone moonStone) {
-		return new MoonStoneWebServer(moonStone, getPort() >= 0);
+	protected MoonstoneWebServer getMoonStoneWebServer(Moonstone moonstone) {
+		return new MoonstoneWebServer(moonstone, getPort() >= 0);
 	}
 	
 	
@@ -374,69 +374,69 @@ public class MoonStoneServletWebServerFactory extends AbstractServletWebServerFa
 	}
 
 	/**
-	 * 设置将应用于{@link Context} 的 {@link MoonStoneContextCustomizer} 集合. 调用此方法将替换任何现有的自定义项.
+	 * 设置将应用于{@link Context} 的 {@link MoonstoneContextCustomizer} 集合. 调用此方法将替换任何现有的自定义项.
 	 * @param moonStoneContextCustomizers the customizers to set
 	 */
-	public void setMoonStoneContextCustomizers(Collection<? extends MoonStoneContextCustomizer> moonStoneContextCustomizers) {
+	public void setMoonStoneContextCustomizers(Collection<? extends MoonstoneContextCustomizer> moonStoneContextCustomizers) {
 		Assert.notNull(moonStoneContextCustomizers, "moonStoneContextCustomizers 不能为 null");
-		this.moonStoneContextCustomizers = new LinkedHashSet<>(moonStoneContextCustomizers);
+		this.moonstoneContextCustomizers = new LinkedHashSet<>(moonStoneContextCustomizers);
 	}
 
 	/**
-	 * @return 将应用于 {@link Context} 的 {@link MoonStoneContextCustomizer} 可变集合
+	 * @return 将应用于 {@link Context} 的 {@link MoonstoneContextCustomizer} 可变集合
 	 */
-	public Collection<MoonStoneContextCustomizer> getMoonStoneContextCustomizers() {
-		return this.moonStoneContextCustomizers;
+	public Collection<MoonstoneContextCustomizer> getMoonStoneContextCustomizers() {
+		return this.moonstoneContextCustomizers;
 	}
 
 	@Override
-	public void addContextCustomizers(MoonStoneContextCustomizer... moonStoneContextCustomizers) {
-		Assert.notNull(moonStoneContextCustomizers, "MoonStoneContextCustomizers 不能为 null");
-		this.moonStoneContextCustomizers.addAll(Arrays.asList(moonStoneContextCustomizers));
+	public void addContextCustomizers(MoonstoneContextCustomizer... moonstoneContextCustomizers) {
+		Assert.notNull(moonstoneContextCustomizers, "MoonStoneContextCustomizers 不能为 null");
+		this.moonstoneContextCustomizers.addAll(Arrays.asList(moonstoneContextCustomizers));
 	}
 
 	/**
-	 * 设置将应用于{@link Connector} 的 {@link MoonStoneConnectorCustomizer} 集合. 调用此方法将替换任何现有的自定义项.
+	 * 设置将应用于{@link Connector} 的 {@link MoonstoneConnectorCustomizer} 集合. 调用此方法将替换任何现有的自定义项.
 	 * @param moonStoneConnectorCustomizers
 	 */
-	public void setMoonStoneConnectorCustomizers(Collection<? extends MoonStoneConnectorCustomizer> moonStoneConnectorCustomizers) {
+	public void setMoonStoneConnectorCustomizers(Collection<? extends MoonstoneConnectorCustomizer> moonStoneConnectorCustomizers) {
 		Assert.notNull(moonStoneConnectorCustomizers, "MoonStoneConnectorCustomizers 不能为 null");
-		this.moonStoneConnectorCustomizers = new LinkedHashSet<>(moonStoneConnectorCustomizers);
+		this.moonstoneConnectorCustomizers = new LinkedHashSet<>(moonStoneConnectorCustomizers);
 	}
 
 	@Override
-	public void addConnectorCustomizers(MoonStoneConnectorCustomizer... moonStoneConnectorCustomizers) {
-		Assert.notNull(moonStoneConnectorCustomizers, "MoonStoneConnectorCustomizers 不能为 null");
-		this.moonStoneConnectorCustomizers.addAll(Arrays.asList(moonStoneConnectorCustomizers));
+	public void addConnectorCustomizers(MoonstoneConnectorCustomizer... moonstoneConnectorCustomizers) {
+		Assert.notNull(moonstoneConnectorCustomizers, "MoonStoneConnectorCustomizers 不能为 null");
+		this.moonstoneConnectorCustomizers.addAll(Arrays.asList(moonstoneConnectorCustomizers));
 	}
 
 	/**
-	 * @return 将应用于 {@link Connector} 的 {@link MoonStoneConnectorCustomizer} 可变集合.
+	 * @return 将应用于 {@link Connector} 的 {@link MoonstoneConnectorCustomizer} 可变集合.
 	 */
-	public Collection<MoonStoneConnectorCustomizer> getMoonStoneConnectorCustomizers() {
-		return this.moonStoneConnectorCustomizers;
+	public Collection<MoonstoneConnectorCustomizer> getMoonStoneConnectorCustomizers() {
+		return this.moonstoneConnectorCustomizers;
 	}
 
 	/**
-	 * 设置将应用于 {@link Connector} 的 {@link MoonStoneProtocolHandlerCustomizer} 集合. 调用此方法将替换任何现有的自定义项.
+	 * 设置将应用于 {@link Connector} 的 {@link MoonstoneProtocolHandlerCustomizer} 集合. 调用此方法将替换任何现有的自定义项.
 	 * @param moonStoneProtocolHandlerCustomizer
 	 */
-	public void setMoonStoneProtocolHandlerCustomizers(Collection<? extends MoonStoneProtocolHandlerCustomizer<?>> moonStoneProtocolHandlerCustomizer) {
+	public void setMoonStoneProtocolHandlerCustomizers(Collection<? extends MoonstoneProtocolHandlerCustomizer<?>> moonStoneProtocolHandlerCustomizer) {
 		Assert.notNull(moonStoneProtocolHandlerCustomizer, "MoonStoneProtocolHandlerCustomizers 不能为 null");
-		this.moonStoneProtocolHandlerCustomizers = new LinkedHashSet<>(moonStoneProtocolHandlerCustomizer);
+		this.moonstoneProtocolHandlerCustomizers = new LinkedHashSet<>(moonStoneProtocolHandlerCustomizer);
 	}
 
 	@Override
-	public void addProtocolHandlerCustomizers(MoonStoneProtocolHandlerCustomizer<?>... moonStoneProtocolHandlerCustomizers) {
-		Assert.notNull(moonStoneProtocolHandlerCustomizers, "MoonStoneProtocolHandlerCustomizers 不能为 null");
-		this.moonStoneProtocolHandlerCustomizers.addAll(Arrays.asList(moonStoneProtocolHandlerCustomizers));
+	public void addProtocolHandlerCustomizers(MoonstoneProtocolHandlerCustomizer<?>... moonstoneProtocolHandlerCustomizers) {
+		Assert.notNull(moonstoneProtocolHandlerCustomizers, "MoonStoneProtocolHandlerCustomizers 不能为 null");
+		this.moonstoneProtocolHandlerCustomizers.addAll(Arrays.asList(moonstoneProtocolHandlerCustomizers));
 	}
 
 	/**
-	 * @return 将应用于 {@link Connector} 的可变 {@link MoonStoneProtocolHandlerCustomizer} 集合
+	 * @return 将应用于 {@link Connector} 的可变 {@link MoonstoneProtocolHandlerCustomizer} 集合
 	 */
-	public Collection<MoonStoneProtocolHandlerCustomizer<?>> getMoonStoneProtocolHandlerCustomizers() {
-		return this.moonStoneProtocolHandlerCustomizers;
+	public Collection<MoonstoneProtocolHandlerCustomizer<?>> getMoonStoneProtocolHandlerCustomizers() {
+		return this.moonstoneProtocolHandlerCustomizers;
 	}
 
 	/**
@@ -444,14 +444,14 @@ public class MoonStoneServletWebServerFactory extends AbstractServletWebServerFa
 	 * 
 	 * @param context - 要重置的上下文
 	 * 
-	 * @see org.zy.moonStone.core.util.CharsetMapperDefault.properties
+	 * @see CharsetMapper
 	 */
-	private void resetDefaultLocaleMapping(MoonStoneEmbeddedContext context) {
+	private void resetDefaultLocaleMapping(MoonstoneEmbeddedContext context) {
 		context.addLocaleEncodingMappingParameter(Locale.ENGLISH.toString(), DEFAULT_CHARSET.displayName());
 		context.addLocaleEncodingMappingParameter(Locale.FRENCH.toString(), DEFAULT_CHARSET.displayName());
 	}
 
-	private void addLocaleMappings(MoonStoneEmbeddedContext context) {
+	private void addLocaleMappings(MoonstoneEmbeddedContext context) {
 		getLocaleCharsetMappings().forEach(
 				(locale, charset) -> context.addLocaleEncodingMappingParameter(locale.toString(), charset.toString()));
 	}
@@ -480,7 +480,7 @@ public class MoonStoneServletWebServerFactory extends AbstractServletWebServerFa
 	private void addDefaultServlet(Context context) {
 		Wrapper defaultServlet = context.createWrapper();
 		defaultServlet.setName("default");
-		defaultServlet.setServletClass("org.zy.moonStone.core.servlets.DefaultServlet");
+		defaultServlet.setServletClass("org.zy.moonstone.core.servlets.DefaultServlet");
 		defaultServlet.addInitParameter("fileEncoding", "utf-8");
 		defaultServlet.setLoadOnStartup(1);
 		defaultServlet.setOverridable(true);
@@ -498,9 +498,9 @@ public class MoonStoneServletWebServerFactory extends AbstractServletWebServerFa
 	 * @param initializers - 要应用的初始化程序
 	 */
 	protected void configureContext(Context context, ServletContextInitializer[] initializers) {
-		MoonStoneStarter starter = new MoonStoneStarter(initializers);
-		if (context instanceof MoonStoneEmbeddedContext) {
-			MoonStoneEmbeddedContext embeddedContext = (MoonStoneEmbeddedContext) context;
+		MoonstoneStarter starter = new MoonstoneStarter(initializers);
+		if (context instanceof MoonstoneEmbeddedContext) {
+			MoonstoneEmbeddedContext embeddedContext = (MoonstoneEmbeddedContext) context;
 			embeddedContext.setStarter(starter);
 			embeddedContext.setFailCtxIfServletStartFails(true);
 		}
@@ -516,12 +516,12 @@ public class MoonStoneServletWebServerFactory extends AbstractServletWebServerFa
 		}
 		
 		for (ErrorPage errorPage : getErrorPages()) {
-			org.zy.moonStone.core.util.descriptor.ErrorPage MoonStoneErrorPage = new org.zy.moonStone.core.util.descriptor.ErrorPage();
+			org.zy.moonstone.core.util.descriptor.ErrorPage moonStoneErrorPage = new org.zy.moonstone.core.util.descriptor.ErrorPage();
 			
-			MoonStoneErrorPage.setLocation(errorPage.getPath());
-			MoonStoneErrorPage.setErrorCode(errorPage.getStatusCode());
-			MoonStoneErrorPage.setExceptionType(errorPage.getExceptionName());
-			context.addErrorPage(MoonStoneErrorPage);
+			moonStoneErrorPage.setLocation(errorPage.getPath());
+			moonStoneErrorPage.setErrorCode(errorPage.getStatusCode());
+			moonStoneErrorPage.setExceptionType(errorPage.getExceptionName());
+			context.addErrorPage(moonStoneErrorPage);
 		}
 		
 		for (MimeMappings.Mapping mapping : getMimeMappings()) {
@@ -531,7 +531,7 @@ public class MoonStoneServletWebServerFactory extends AbstractServletWebServerFa
 		configureSession(context);
 		
 		new DisableReferenceClearingContextCustomizer().customize(context);
-		for (MoonStoneContextCustomizer customizer : this.moonStoneContextCustomizers) {
+		for (MoonstoneContextCustomizer customizer : this.moonstoneContextCustomizers) {
 			customizer.customize(context);
 		}
 	}

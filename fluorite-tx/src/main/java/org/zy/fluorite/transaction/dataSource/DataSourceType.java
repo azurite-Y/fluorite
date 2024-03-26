@@ -9,7 +9,7 @@ import java.util.Map;
  * @Description
  */
 public enum DataSourceType {
-	HikariCP("org.apache.commons.dbcp2.BasicDataSource"),
+	HikariCP("com.zaxxer.hikari.HikariDataSource"),
 	
 	dbcp("org.apache.commons.dbcp2.BasicDataSource"),
 	
@@ -30,10 +30,5 @@ public enum DataSourceType {
 	
 	public static DataSourceType forCode(String typeName)  {
 		return typeLookup.get(typeName);
-	}
-	
-	public static void main(String[] args) {
-		DataSourceType forCode = DataSourceType.forCode("com.alibaba.druid.pool.DruidDataSource");
-		System.out.println(forCode);
 	}
 }

@@ -48,7 +48,7 @@ public class ArgsAnnotationPointcutExpressionParse implements PointcutExpression
 			 *	 若未标注则返回exipre属性为false的PointcutMatcher对象
 			 */
 			if (isAnnotationPresentForParameters(anoClz , method.getParameters()) ) {
-				pointcutMatcher.setExpire(true);
+				pointcutMatcher.setMark(true);
 				pointcutMatcher.setAspectJJoinPointcutAnnotation(aspectJAnnotation);
 				pointcutMatcher.addPointcutMethod(method);
 			}

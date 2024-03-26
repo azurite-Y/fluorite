@@ -7,6 +7,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Modifier;
 
+import org.zy.fluorite.aop.aspectj.expression.PointcutExpressionParseStrategy;
+
 
 /**
  * @DateTime 2020年7月5日 下午11:17:47;
@@ -21,10 +23,10 @@ public @interface Pointcut {
 	 * 切点的全限定名称，但方法参数无论切点方法是否有都不需在此指定。而在args()方法中指定。
 	 * ps：
 	 * <ol>语法示例：
-	 * <li>org.zy.fluorite.aop.aspectj.annotation.Pointcut.*：将Pointcut类中定义的方法全部作为切点匹配。</li>
-	 * <li>org.zy.fluorite.aop.aspectj.annotation.Pointcut.value()：将Pointcut类中定义的value方法作为切点匹配。</li>
-	 * <li>org.zy.fluorite.aop.aspectj.annotation..：将此包名下的所有类中的所有方法作为切点匹配</li>
-	 * <li>org.zy.fluorite.aop.aspectj.annotation..value()：将此包名下的所有类中的value方法作为切点匹配</li>
+	 * <li>com.zy.service.UserService.*：将 UserService 类中定义的方法全部作为切点匹配。</li>
+	 * <li>com.zy.service.UserService.login()：将 UserService 类中定义的 login 方法作为切点匹配。</li>
+	 * <li>com.zy.service..：将此包名下的所有类中的所有方法作为切点匹配</li>
+	 * <li>com.zy.service.UserServic..login()：将此包名下的所有类中的value方法作为切点匹配</li>
 	 * </ol>
 	 */
 	String value() default "";
@@ -43,14 +45,16 @@ public @interface Pointcut {
 	Class<?>[] args() default {};
 	
 	/**
-	 * 切点表达式的语义补正（此功能暂未实现）
+	 * 切点表达式的语义补正
 	 * <ol>支持的语法前缀：
 	 * <li>execution</li>
-	 * <li>within</li>
-	 * <li>args</li>
-	 * <li>this</li>
-	 * <li>target</li>
+	 * <li>@within</li>
+	 * <li>@args</li>
+	 * <li>@annotation</li>
 	 * </ol>
+	 * 
+	 * @see PointcutExpressionParseStrategy
+	 * @apiNote @within、@annotation、@args。此三者不支持使用通配符，即：在value属性中不能使用"*"和".."
 	 */
 	String prefix() default "execution";
 	

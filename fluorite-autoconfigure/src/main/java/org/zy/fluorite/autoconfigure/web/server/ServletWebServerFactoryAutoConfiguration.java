@@ -1,8 +1,8 @@
 package org.zy.fluorite.autoconfigure.web.server;
 
 import org.zy.fluorite.autoconfigure.web.ServerProperties;
-import org.zy.fluorite.autoconfigure.web.embedded.EmbeddedMoonStoneServletWebServerFactory;
-import org.zy.fluorite.autoconfigure.web.servlet.customizer.MoonStoneServletWebServerFactoryCustomizer;
+import org.zy.fluorite.autoconfigure.web.embedded.EmbeddedMoonstoneServletWebServerFactory;
+import org.zy.fluorite.autoconfigure.web.servlet.customizer.MoonstoneServletWebServerFactoryCustomizer;
 import org.zy.fluorite.autoconfigure.web.servlet.customizer.ServletWebServerFactoryCustomizer;
 import org.zy.fluorite.context.annotation.conditional.ConditionalOnClass;
 import org.zy.fluorite.core.annotation.Bean;
@@ -19,8 +19,8 @@ import org.zy.fluorite.core.interfaces.Ordered;
  */
 @Configuration(proxyBeanMethods = false)
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@ConditionalOnClass( type = {"javax.servlet.ServletRequest"} )
-@Import( value= {ServletWebServerBeanPostProcessorsRegistrar.class,  EmbeddedMoonStoneServletWebServerFactory.class})
+@ConditionalOnClass( type = {"org.zy.moonstone.core.startup.Moonstone"} )
+@Import( value= {ServletWebServerBeanPostProcessorsRegistrar.class, EmbeddedMoonstoneServletWebServerFactory.class})
 public class ServletWebServerFactoryAutoConfiguration {
 	
 	@Bean
@@ -29,9 +29,7 @@ public class ServletWebServerFactoryAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnClass(type = "org.zy.moonStone.core.startup.MoonStone")
-	public MoonStoneServletWebServerFactoryCustomizer moonStoneServletWebServerFactoryCustomizer(ServerProperties serverProperties) {
-		return new MoonStoneServletWebServerFactoryCustomizer(serverProperties);
+	public MoonstoneServletWebServerFactoryCustomizer moonstoneServletWebServerFactoryCustomizer(ServerProperties serverProperties) {
+		return new MoonstoneServletWebServerFactoryCustomizer(serverProperties);
 	}
-	
 }

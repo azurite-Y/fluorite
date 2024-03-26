@@ -23,8 +23,8 @@ public class PointcutMatcher {
 	/** 是否选中或匹配所有方法，若为true则代表切点表达式适配所有方法，反之则仅适配当前方法 */
 	private boolean matcherMethods = false;
 
-	/** 标识此次验证结果，若为false则匹配失败，反之则匹配成功 */
-	private boolean expire = false;
+	/** 标识此次验证结果，若为true则匹配成功，反之则匹配失败 */
+	private boolean mark = false;
 
 	/**
 	 * 当适配给定类的所有方法时，适宜使用此构造器构建一个不为null的实例以告诉上级调用方法匹配成功。<br/>
@@ -56,6 +56,10 @@ public class PointcutMatcher {
 
 	public void setPointcutMethods(List<Method> lists) {
 		pointcutMethods = lists;
+		// 匹配的方法集不为空集则代表切点匹配成功
+		if (!lists.isEmpty()) {
+			this.mark = true;
+		}
 	}
 	
 	public void addPointcutMethod(Method pointcutMethod) {
@@ -79,13 +83,21 @@ public class PointcutMatcher {
 		return matcherMethods;
 	}
 
-	/** 标识此次验证结果，若为false则匹配失败，反之则匹配成功 */
-	public boolean isExpire() {
-		return expire;
+	/**
+	 * 是否匹配切点成功，若为true则代表切点匹配成功，反之则匹配失败
+	 * 
+	 * @return
+	 */
+	public boolean isMark() {
+		return mark;
 	}
 
-	public void setExpire(boolean expire) {
-		this.expire = expire;
+	/**
+	 * 设置此次匹配结果
+	 * @param mark 匹配结果
+	 */
+	public void setMark(boolean mark) {
+		this.mark = mark;
 	}
 
 	public void setMatcherMethods(boolean matcherMethods) {

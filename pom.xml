@@ -12,8 +12,11 @@
 		<module>fluorite-aop</module>
 		<module>fluorite-beans</module>
 		<module>fluorite-core</module>
+		<module>fluorite-tx</module>
 		<module>fluorite-web</module>
 		<module>fluorite-autoconfigure</module>
+		<module>fluorite-boot-starter</module>
+		<module>fluorite-web-starter</module>
 	</modules>
 
 	<properties>
@@ -34,7 +37,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
+			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -53,7 +56,20 @@
 				<artifactId>logback-classic</artifactId>
 				<scope>provided</scope>
 				<optional>true</optional>
-				<version>1.2.3</version>
+				<version>1.4.14</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-log4j12</artifactId>
+				<version>1.7.25</version>
+				<optional>true</optional>
+			</dependency>
+			<!-- 提供给 Moonstone 使用，且 fluorite-web、fluorite-boot 模块依赖此包 -->
+			<dependency>
+				<groupId>javax.servlet</groupId>
+				<artifactId>javax.servlet-api</artifactId>
+				<version>4.0.1</version>
+				<optional>true</optional>
 			</dependency>
 			<dependency>
 				<groupId>javax.annotation</groupId>
@@ -61,38 +77,79 @@
 				<version>1.3.2</version>
 			</dependency>
 			<dependency>
-				<groupId>javax.servlet</groupId>
-				<artifactId>javax.servlet-api</artifactId>
-				<version>4.0.1</version>
-				<!-- 由使用者或调用者提供 -->
-				<scope>provided</scope>
-				<optional>true</optional>
+				<groupId>com.alibaba</groupId>
+				<artifactId>fastjson</artifactId>
+				<version>2.0.9.graal</version>
 			</dependency>
 			<dependency>
 				<groupId>org.junit.jupiter</groupId>
-				<artifactId>junit-jupiter-engine</artifactId>
+				<artifactId>junit-jupiter</artifactId>
 				<version>5.4.0</version>
+				<optional>true</optional>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>cglib</groupId>
 				<artifactId>cglib</artifactId>
-				<optional>true</optional>
 				<version>3.3.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.alibaba</groupId>
-				<artifactId>fastjson</artifactId>
-				<version>1.2.62</version>
-				<!-- 由使用者或调用者提供 -->
-				<scope>provided</scope>
 				<optional>true</optional>
 			</dependency>
 			<dependency>
-				<groupId>org.zy.moonStone</groupId>
-				<artifactId>MoonStone-Core</artifactId>
+				<groupId>org.zy.moonstone</groupId>
+				<artifactId>moonstone-core</artifactId>
 				<version>1.0.0.RELEASE</version>
 				<optional>true</optional>
+			</dependency>
+			<!-- 控制子項目依賴的模块版本 -->
+			<dependency>
+				<groupId>org.zy.fluorite</groupId>
+				<artifactId>fluorite-boot-starter</artifactId>
+				<version>1.0.0.RELEASE</version>
+			</dependency>
+			<dependency>
+				<groupId>org.zy.fluorite</groupId>
+				<artifactId>fluorite-web-starter</artifactId>
+				<version>1.0.0.RELEASE</version>
+			</dependency>
+			<dependency>
+				<groupId>org.zy.fluorite</groupId>
+				<artifactId>fluorite-bootr</artifactId>
+				<version>1.0.0.RELEASE</version>
+			</dependency>
+			<dependency>
+				<groupId>org.zy.fluorite</groupId>
+				<artifactId>fluorite-autoconfigure</artifactId>
+				<version>1.0.0.RELEASE</version>
+			</dependency>
+			<dependency>
+				<groupId>org.zy.fluorite</groupId>
+				<artifactId>fluorite-web</artifactId>
+				<version>1.0.0.RELEASE</version>
+			</dependency>
+			<dependency>
+				<groupId>org.zy.fluorite</groupId>
+				<artifactId>fluorite-tx</artifactId>
+				<version>1.0.0.RELEASE</version>
+			</dependency>
+			<dependency>
+				<groupId>org.zy.fluorite</groupId>
+				<artifactId>fluorite-context</artifactId>
+				<version>1.0.0.RELEASE</version>
+			</dependency>
+			<dependency>
+				<groupId>org.zy.fluorite</groupId>
+				<artifactId>fluorite-aop</artifactId>
+				<version>1.0.0.RELEASE</version>
+			</dependency>
+			<dependency>
+				<groupId>org.zy.fluorite</groupId>
+				<artifactId>fluorite-beans</artifactId>
+				<version>1.0.0.RELEASE</version>
+			</dependency>
+			<dependency>
+				<groupId>org.zy.fluorite</groupId>
+				<artifactId>fluorite-core</artifactId>
+				<version>1.0.0.RELEASE</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -101,7 +158,37 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
+				<version>3.8.1</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+			<!--发布源码插件 -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>3.2.1</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- maven 打包时跳过测试 -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.2.1</version>
+				<configuration>
+					<!-- 不执行单元测试，但会编译测试类，并在target/test-classes目录下生成相应的class -->
+					<skipTests>true</skipTests>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

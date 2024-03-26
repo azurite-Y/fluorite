@@ -13,16 +13,16 @@ import org.zy.fluorite.autoconfigure.web.servlet.interfaces.ServletContextInitia
 /**
  * @dateTime 2022年12月7日;
  * @author zy(azurite-Y);
- * @description {@link ServletContainerInitializer } 用于触发 {@link Servletcontextinitializer }并跟踪启动错误。
+ * @description {@link ServletContainerInitializer } 用于触发 {@link ServletContextInitializer }并跟踪启动错误。
  */
-class MoonStoneStarter implements ServletContainerInitializer {
-	private static final Logger logger = LoggerFactory.getLogger(MoonStoneStarter.class);
+class MoonstoneStarter implements ServletContainerInitializer {
+	private static final Logger logger = LoggerFactory.getLogger(MoonstoneStarter.class);
 
 	private final ServletContextInitializer[] initializers;
 
 	private volatile Exception startUpException;
 
-	MoonStoneStarter(ServletContextInitializer[] initializers) {
+	MoonstoneStarter(ServletContextInitializer[] initializers) {
 		this.initializers = initializers;
 	}
 

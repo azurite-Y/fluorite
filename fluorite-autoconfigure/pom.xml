@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.zy.fluorite</groupId>
@@ -8,34 +8,35 @@
 		<version>1.0.0.RELEASE</version>
 	</parent>
 	<artifactId>fluorite-autoconfigure</artifactId>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<maven.compiler.encoding>UTF-8</maven.compiler.encoding>
+		<java.version>1.8</java.version>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.zy.fluorite</groupId>
 			<artifactId>fluorite-context</artifactId>
-			<version>1.0.0.RELEASE</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.zy.fluorite</groupId>
 			<artifactId>fluorite-web</artifactId>
-			<version>1.0.0.RELEASE</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.zy.fluorite</groupId>
 			<artifactId>fluorite-tx</artifactId>
-			<version>1.0.0.RELEASE</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.zy.moonStone</groupId>
-			<artifactId>MoonStone-Core</artifactId>
+			<groupId>org.zy.moonstone</groupId>
+			<artifactId>moonstone-core</artifactId>
 			<optional>true</optional>
 			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
 		</dependency>
 	</dependencies>
 </project>

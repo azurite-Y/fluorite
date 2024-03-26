@@ -117,23 +117,23 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 				// 若连接点需在切面织入中进行任何逻辑则在此创建 AspectJPointcutAdvisor
 				return null;
 			case Around:
-				DebugUtils.logFromAop(logger, "找到的Around方法："+method.getName()+"，class："+method.getDeclaringClass().getName());
+				DebugUtils.logFromAop(logger, "找到的@Around方法："+method.getName()+"，class："+method.getDeclaringClass().getName());
 				advice = new AspectJAroundAdvice(method, expressionPointcut, aspectInstanceFactory);
 				break;
 			case Before:
-				DebugUtils.logFromAop(logger, "找到的Before方法："+method.getName()+"，class："+method.getDeclaringClass().getName());
+				DebugUtils.logFromAop(logger, "找到的@Before方法："+method.getName()+"，class："+method.getDeclaringClass().getName());
 				advice = new AspectJMethodBeforeAdvice(method, expressionPointcut, aspectInstanceFactory);
 				break;
 			case After:
-				DebugUtils.logFromAop(logger, "找到的After方法："+method.getName()+"，class："+method.getDeclaringClass().getName());
+				DebugUtils.logFromAop(logger, "找到的@After方法："+method.getName()+"，class："+method.getDeclaringClass().getName());
 				advice = new AspectJAfterAdvice(method, expressionPointcut, aspectInstanceFactory);
 				break;
 			case AfterReturning:
-				DebugUtils.logFromAop(logger, "找到的AfterReturning方法："+method.getName()+"，class："+method.getDeclaringClass().getName());
+				DebugUtils.logFromAop(logger, "找到的@AfterReturning方法："+method.getName()+"，class："+method.getDeclaringClass().getName());
 				advice = new AspectJAfterReturningAdvice(method, expressionPointcut, aspectInstanceFactory);
 				break;
 			case AfterThrowing:
-				DebugUtils.logFromAop(logger, "找到的AfterThrowing方法："+method.getName()+"，class："+method.getDeclaringClass().getName());
+				DebugUtils.logFromAop(logger, "找到的@AfterThrowing方法："+method.getName()+"，class："+method.getDeclaringClass().getName());
 				advice = new AspectJAfterThrowingAdvice(method, expressionPointcut, aspectInstanceFactory);
 				for (Class<?> clz : method.getParameterTypes()) {
 					if (Exception.class.isAssignableFrom(clz)) {
@@ -155,8 +155,9 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 	}
 
 	/**
-	 * @param beanType
-	 * @param aspectMetadata
+	 * 检查给定 bean 类型获取其中定义的 {@linkplain Pointcut 连接点 } 方法级
+	 * @param beanType 检查的 bena 类型
+	 * @param aspectMetadata - 给定类的注解信息
 	 * @return
 	 */
 	private List<Method> getAdvisorMethods(Class<?> beanType, AnnotationMetadata aspectMetadata) {
@@ -177,11 +178,14 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 	}
 
 	/**
-	 * @param field
-	 * @param attributes -  当前属性的注解信息
+	 * 查找属性上的 {@linkplain DeclareParents } 注解，并根据其属性创建 {@linkplain DeclareParentsAdvisor }
+	 * @param field 检查的数下
+	 * @param attributes 当前属性的注解信息
 	 * @return
 	 */
 	private Advisor getDeclareParentsAdvisor(Field field , AnnotationAttributes attributes) {
+		if (attributes == null) { return null; }
+		
 		DeclareParents declareParents = attributes.getAnnotation(DeclareParents.class);
 		if (declareParents == null) {
 			return null;

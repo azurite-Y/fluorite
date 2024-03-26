@@ -59,7 +59,6 @@ public class FileSearch {
 	 * 扫描获得指定路径下的后缀名相同的文件名集合，返回存储后缀符合的File对象的List容器</br>
 	 * @param packageDir - 包扫描路径
 	 * @param extension - 文件后缀名
-	 * @param rootPath - 根目录
 	 * @return
 	 */
 	public static List<Resource> searchToFile(String packageDir,String extension) {
@@ -192,7 +191,7 @@ public class FileSearch {
 		logger.info("包扫描路径最终候选："+candidate);
 	}
 	
-	public static void main(String[] args) {
+//	public static void main(String[] args) {
 //		System.out.println(FileSearch.PROJECT_ROOT_DIRECTORY);
 //		List<Resource> search = FileSearch.searchToFile("org.zy.fluorite.core.utils","class");
 //		for (Resource file : search) {
@@ -200,5 +199,5 @@ public class FileSearch {
 //		}
 //		List<String> searchstr = FileSearch.searchToString("org.zy.fluorite.context.utils","class");
 //		System.out.println(searchstr);
-	}
+//	}
 }

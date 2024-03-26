@@ -1,6 +1,6 @@
 package org.zy.fluorite.autoconfigure.web.server.moonstone.interfaces;
 
-import org.zy.moonStone.core.interfaces.container.Context;
+import org.zy.moonstone.core.interfaces.container.Context;
 
 /**
  * @dateTime 2022年4月1日;
@@ -8,12 +8,12 @@ import org.zy.moonStone.core.interfaces.container.Context;
  * @description 
  */
 @FunctionalInterface
-public interface MoonStoneContextCustomizer {
+public interface MoonstoneContextCustomizer {
 	
 	/**
 	 * Context 自定义
 	 * 
-	 * @param connector - 自定义的 Context
+	 * @param context - 自定义的 Context
 	 */
 	void customize(Context context);
 }

@@ -101,9 +101,9 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 				}
 			}
 		} catch (InvocationTargetException e) {
-			throw new BeanInstantiationException("工厂方法调用异常，by method ：" + factoryMethod + "args: " +(args != null ? Arrays.asList(args) : args) ,e.getCause());
+			throw new BeanInstantiationException("工厂方法调用异常，by method ：" + factoryMethod + ", args: " +(args != null ? Arrays.asList(args) : args) ,e.getCause());
 		} catch (Exception ex) {
-			throw new BeanInstantiationException("工厂方法调用异常，by method ：" + factoryMethod + "args: " +(args != null ? Arrays.asList(args) : args) ,ex);
+			throw new BeanInstantiationException("工厂方法调用异常，by method ：" + factoryMethod + ", args: " +(args != null ? Arrays.asList(args) : args) ,ex);
 		}
 	}
 

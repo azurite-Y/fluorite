@@ -1,6 +1,6 @@
 package org.zy.fluorite.autoconfigure.web.server.moonstone.interfaces;
 
-import org.zy.moonStone.core.connector.Connector;
+import org.zy.moonstone.core.connector.Connector;
 
 /**
  * @dateTime 2022年4月1日;
@@ -8,7 +8,7 @@ import org.zy.moonStone.core.connector.Connector;
  * @description 可用于自定义 MoonStone {@link Connector } 的回调接口
  */
 @FunctionalInterface
-public interface MoonStoneConnectorCustomizer {
+public interface MoonstoneConnectorCustomizer {
 	
 	/**
 	 * Connector 自定义

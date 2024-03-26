@@ -25,7 +25,7 @@ public class DefaultPointcutExpressionParse implements PointcutExpressionParse {
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 	
 	/** 是否还需匹配方法信息 */
-	boolean matcherMethod = true;
+	boolean matcherMethod;
 
 	@Override
 	public boolean support(String prefix) {
@@ -35,11 +35,9 @@ public class DefaultPointcutExpressionParse implements PointcutExpressionParse {
 	@Override
 	public PointcutMatcher parse(Class<?> targetClass, AspectJAnnotation<?> aspectJAnnotation, Class<?> aspectClass,
 			Method method) {
-		
 		PointcutMatcher parseClassRank = parseClassRank(targetClass,aspectClass, aspectJAnnotation);
-		if (!parseClassRank.isExpire() && matcherMethod) {
-			boolean rank = parseMethodRank(parseClassRank,targetClass,aspectClass);
-			parseClassRank.setExpire(!rank);
+		if (!parseClassRank.isMark() && matcherMethod) {
+			parseMethodRank(parseClassRank,targetClass,aspectClass);
 		}
 		return parseClassRank;
 	}
@@ -60,12 +58,6 @@ public class DefaultPointcutExpressionParse implements PointcutExpressionParse {
 		 */
 		//----------------------------------开始解析-----------------------------------------------
 		matcherMethod = true; // 设置默认值
-		if (aspectJAnnotation == null) {
-			System.out.println();
-		}
-		if (aspectJAnnotation.getAnnotationValuesAttributes() == null) {
-			System.out.println();
-		}
 		
 		String expression = aspectJAnnotation.getAnnotationValue("value", String.class);
 		int doubleDelimitres = expression.indexOf(PointcutExpressionParse.DOUBLE_DELIMITRES);
@@ -105,7 +97,7 @@ public class DefaultPointcutExpressionParse implements PointcutExpressionParse {
 						method = targetClass.getMethod(methodName
 								,(Class<?> [])aspectJAnnotation.getAnnotationValue("args") );
 					} catch (Exception e) {
-						pointcutMatcher.setExpire(false);
+						pointcutMatcher.setMark(false);
 						return pointcutMatcher;
 						// e.printStackTrace();
 					}
@@ -154,17 +146,19 @@ public class DefaultPointcutExpressionParse implements PointcutExpressionParse {
 					Class<?> [] args = (Class<?> []) aspectJAnnotation.getAnnotationValue("args");
 					method = targetClass.getMethod(methodName , args);
 				} catch (Exception e) {
-					pointcutMatcher.setExpire(true);
+					// 无法获取指定方法则代表不匹配
+					pointcutMatcher.setMark(false);
 					return pointcutMatcher;
-					//	e.printStackTrace();
 				} 
 				pointcutMatcher.setAspectJJoinPointcutAnnotation(aspectJAnnotation);
 				pointcutMatcher.addPointcutMethod(method);
 				return pointcutMatcher;
+			} else {
+				matcherMethod = false;
+				pointcutMatcher.setMatcherMethods(false);
 			}
 		}
 		
-		pointcutMatcher.setExpire(true);
 		return pointcutMatcher;
 	}
 
@@ -177,7 +171,7 @@ public class DefaultPointcutExpressionParse implements PointcutExpressionParse {
 	 * @param aspectJAnnotation - 适配的切面方法注解信息
 	 * @return 返回true则表示匹配，反之则代表不匹配
 	 */
-	private boolean parseMethodRank(PointcutMatcher pointcutMatcher, Class<?> targetClass , Class<?> aspectClass ) {
+	private void parseMethodRank(PointcutMatcher pointcutMatcher, Class<?> targetClass , Class<?> aspectClass ) {
 		// 因当前我还未完全掌握Aspectj的“execution”、“within”等Aspect语义字符的用法，所以prefix属性当前暂未拥有实际功能
 		List<Method> methods = pointcutMatcher.getPointcutMethods();
 		AspectJAnnotation<?> pointcutAnnotation = pointcutMatcher.getAspectJJoinPointcutAnnotation();
@@ -189,8 +183,6 @@ public class DefaultPointcutExpressionParse implements PointcutExpressionParse {
 			}
 		}
 		pointcutMatcher.setPointcutMethods(matcherMethod);
-		// 匹配的方法集不为空集则代表切点匹配成功
-		return !matcherMethod.isEmpty();
 	}
 
 	/**
@@ -200,7 +192,7 @@ public class DefaultPointcutExpressionParse implements PointcutExpressionParse {
 	 * @return
 	 */
 	private boolean parseAccessModifier(AspectJAnnotation<?> pointcutAnnotation, Method method) {
-		int accessModifier = pointcutAnnotation.getAnnotationValue("accessModifier", int.class);
+		Integer accessModifier = pointcutAnnotation.getAnnotationValue("accessModifier", Integer.class);
 		return method.getModifiers() == accessModifier;
 	}
 

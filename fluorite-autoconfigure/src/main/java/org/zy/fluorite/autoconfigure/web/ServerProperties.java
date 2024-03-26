@@ -43,13 +43,12 @@ public class ServerProperties {
 	private Servlet servlet = new Servlet();
 	
 	@NestedConfigurationProperty
-	private MoonStone moonStone = new MoonStone();
+	private Moonstone moonstone = new Moonstone();
 	
 	@NestedConfigurationProperty
 	private Compression compression = new Compression();
 	
-	
-	
+
 	public String getServerHeader() {
 		return serverHeader;
 	}
@@ -92,15 +91,15 @@ public class ServerProperties {
 	public void setMaxHttpHeaderSize(int maxHttpHeaderSize) {
 		this.maxHttpHeaderSize = maxHttpHeaderSize;
 	}
-	public MoonStone getMoonStone() {
-		return moonStone;
+	public Moonstone getMoonstone() {
+		return moonstone;
 	}
-	public void setMoonStone(MoonStone moonStone) {
-		this.moonStone = moonStone;
+	public void setMoonstone(Moonstone moonstone) {
+		this.moonstone = moonstone;
 	}
 
 	
-	public static class MoonStone {
+	public static class Moonstone {
 		/** 保存传入协议的报头，通常命名为“X-Forwarded-Proto” */
 		private String protocolHeader;
 
@@ -119,13 +118,13 @@ public class ServerProperties {
 		/** 线程相关配置 */
 		private Threads threads = new Threads();
 		
-		/** MoonStone 基本目录。如果未指定，则依据 {@link ServerProperties.MoonStone#useTempBaseDir } 决定使用临时目录还是类加载目录。 */
+		/** MoonStone 基本目录。如果未指定，则依据 {@link #useTempBaseDir } 决定使用临时目录还是类加载目录。 */
 		private File basedir;
 		
-		/** 使用临时目录作为 {@link ServerProperties.MoonStone#basedir } */
+		/** 使用临时目录作为 {@link #basedir } */
 		private boolean useTempBaseDir = false;
 		
-		/** 设置应用程序加载根目录，若使用的是相对目录则相对于 {@link ServerProperties.MoonStone#basedir } */
+		/** 设置应用程序加载根目录，若使用的是相对目录则相对于 {@link #basedir } */
 		private String appBaseDir;
 		
 		/** 调用BackationProcess方法之间的延迟(以秒为单位)。默认值为-1则不使用 backgroundProcess() */
@@ -327,7 +326,7 @@ public class ServerProperties {
 		private Map<String, String> contextParameters = new HashMap<>();
 
 		/** 是否启用Servlet环境支持 */
-		private boolean enable = true;
+		private boolean enable = false;
 		/** 应用程序的主上下文路径 */
 //		private String contextPath;
 

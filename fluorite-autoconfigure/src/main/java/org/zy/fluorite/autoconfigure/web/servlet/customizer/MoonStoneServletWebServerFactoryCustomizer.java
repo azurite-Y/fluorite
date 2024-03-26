@@ -2,7 +2,7 @@ package org.zy.fluorite.autoconfigure.web.servlet.customizer;
 
 import org.zy.fluorite.autoconfigure.web.ServerProperties;
 import org.zy.fluorite.autoconfigure.web.server.interfaces.WebServerFactoryCustomizer;
-import org.zy.fluorite.autoconfigure.web.server.moonstone.MoonStoneServletWebServerFactory;
+import org.zy.fluorite.autoconfigure.web.server.moonstone.MoonstoneServletWebServerFactory;
 import org.zy.fluorite.core.interfaces.Ordered;
 
 /**
@@ -10,10 +10,10 @@ import org.zy.fluorite.core.interfaces.Ordered;
  * @author zy(azurite-Y);
  * @description  {@link WebServerFactoryCustomizer} 将 {@link ServerProperties} 应用于 MoonStone Web服务器
  */
-public class MoonStoneServletWebServerFactoryCustomizer implements WebServerFactoryCustomizer<MoonStoneServletWebServerFactory>, Ordered {
+public class MoonstoneServletWebServerFactoryCustomizer implements WebServerFactoryCustomizer<MoonstoneServletWebServerFactory>, Ordered {
 	private final ServerProperties serverProperties;
 
-	public MoonStoneServletWebServerFactoryCustomizer(ServerProperties serverProperties) {
+	public MoonstoneServletWebServerFactoryCustomizer(ServerProperties serverProperties) {
 		this.serverProperties = serverProperties;
 	}
 
@@ -23,8 +23,8 @@ public class MoonStoneServletWebServerFactoryCustomizer implements WebServerFact
 	}
 
 	@Override
-	public void customize(MoonStoneServletWebServerFactory factory) {
-		ServerProperties.MoonStone moonStoneProperties = this.serverProperties.getMoonStone();
-		factory.addContextCustomizers((context) -> context.setMapperContextRootRedirectEnabled(moonStoneProperties.getRedirectContextRoot()));
+	public void customize(MoonstoneServletWebServerFactory factory) {
+		ServerProperties.Moonstone moonstoneProperties = this.serverProperties.getMoonstone();
+		factory.addContextCustomizers((context) -> context.setMapperContextRootRedirectEnabled(moonstoneProperties.getRedirectContextRoot()));
 	}
 }

@@ -39,11 +39,12 @@ public @interface After {
 	 * 切点表达式的语义补正
 	 * <ol>支持的语法前缀：
 	 * <li>execution</li>
-	 * <li>within</li>
-	 * <li>args</li>
-	 * <li>this</li>
-	 * <li>target</li>
+	 * <li>@within</li>
+	 * <li>@args</li>
+	 * <li>@annotation</li>
 	 * </ol>
+	 * 
+	 * @see PointcutExpressionParseStrategy
 	 */
 	String prefix() default "execution";
 	
@@ -57,7 +58,7 @@ public @interface After {
 	 * <li>abstract</li>
 	 * </ol>
 	 */
-	int[] accessModifier() default Modifier.PUBLIC ;
+	int accessModifier() default Modifier.PUBLIC ;
 	
 	/** 
 	 * 方法的返回值，若返回值有泛型则可连带着泛型信息。</br>

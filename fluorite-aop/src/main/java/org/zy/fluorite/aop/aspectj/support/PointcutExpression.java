@@ -27,7 +27,10 @@ import org.zy.fluorite.core.utils.ReflectionUtils;
 public final class PointcutExpression {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
-	/** 引用切点和连接点方法缓存 String：”切点表达式-切面类“ */
+	/** 
+	  *  引用切点key和连接点方法缓存
+	 * key-value: {pointcut()-com.zy.aop.aspect.UserServiceAspect :: 切面类连接点 Method 对象} 
+	 */
 	private final Map<String, Method> pointcutExpressionCache = new ConcurrentHashMap<>();
 	
 	/** 连接点方法与方法注解模型对象缓存 */
@@ -84,6 +87,7 @@ public final class PointcutExpression {
 		String expression = aspectJAnnotation.getAnnotationValue("value", String.class);
 		// 切面类中定义的切点
 		AspectJAnnotation<?> aspectJoinPointcutAnnotation = null;
+		// 切面类连接点方法
 		Method aspectJPointcutMethod = null;
 		/*
 		 * 若表达式中未包含“.”则为引用切面类中的连接点方法，如"pointcut()"
@@ -91,8 +95,10 @@ public final class PointcutExpression {
 		 */
 		if (expression.indexOf(".") == -1) { // 引用切面类中的连接点方法
 			StringBuilder builder = new StringBuilder();
+			// 拼接引用切点key
 			builder.append(expression).append("-").append(aspectClass.getName());
 			Method aspectJPointcutMethodCache = this.pointcutExpressionCache.get(builder.toString());
+			// 无连接点方法缓存则进行解析获取
 			if (aspectJPointcutMethodCache == null) {
 				// 查找此方法，并获取其@Pointcut注解。连接点方法必须为无参方法
 				try {
@@ -109,11 +115,11 @@ public final class PointcutExpression {
 					this.pointcutExpressionCache.put(builder.toString(), aspectJPointcutMethod);
 					this.aspectJPointcutAnnotationCache.put(aspectJPointcutMethod, aspectJoinPointcutAnnotation);
 				} catch (NoSuchMethodException e) {
-					throw new IllegalArgumentException("切面中定义的连接点方法必须为无参方法！" , e);
+					throw new IllegalArgumentException("切面中定义的连接点方法必须为无参方法！By class: " + aspectClass.getTypeName() , e);
 				} catch (SecurityException e) {
 					e.printStackTrace();
 				}
-			} else {
+			} else { // 已有连接点方法缓存
 				aspectJPointcutMethod = aspectJPointcutMethodCache;
 				// 尝试查找缓存的匹配结果
 				cacheKey = getCacheKey(aspectJPointcutMethod, targetClass);
@@ -121,13 +127,13 @@ public final class PointcutExpression {
 				if (falg != null) {
 //					DebugUtils.logFromAop(logger, "缓存的切面匹配结果：["+falg.isExpire()+"]"+"，by aspectClass："+aspectClass.toString()+"，targetClass："+targetClass.getSimpleName()
 //						+"，aspectMethod："+adviceMethod.getName()+"，on expression："+expression);
-					return falg.isExpire();
+					return falg.isMark();
 				}
 				
-				// 执行到此都没有返回则代表需判断切面与当前Bean是否适配，则在此获得之前缓存的连接点注解对象
+				// 执行到此都没有返回则代表需判断切面与当前Bean是否适配，在此获得之前缓存的连接点注解对象
 				aspectJoinPointcutAnnotation = this.aspectJPointcutAnnotationCache.get(aspectJPointcutMethod);
 			}
-		} else { // 那么就使用参数传递的数值
+		} else { // 那么就使用切面注解传递切点信息进行匹配
 			aspectJoinPointcutAnnotation = aspectJAnnotation; 
 			aspectJPointcutMethod = adviceMethod;
 			/*
@@ -144,7 +150,7 @@ public final class PointcutExpression {
 			if (falg != null) {
 //				logger.info("缓存的切面匹配结果：["+!falg.isExpire()+"]"+"，by aspectClass："+aspectClass.toString()+"，targetClass："+targetClass.getSimpleName()
 //					+"，aspectMethod："+adviceMethod.getName()+"，on expression："+expression);
-				return !falg.isExpire();
+				return falg.isMark();
 			}
 		}
 		// 从连接点注解中获得语义补正
@@ -157,9 +163,9 @@ public final class PointcutExpression {
 			this.parseResultCache.put(cacheKey, parse);
 //			DebugUtils.logFromAop(logger, "缓存的切面匹配结果：["+false+"]"+"，by aspectClass："+aspectClass.toString()+"，targetClass："+targetClass.getSimpleName()
 //				+"，aspectMethod："+adviceMethod.getName()+"，on expression："+expression);
-			if (parse.isExpire()) {
-				DebugUtils.logFromAop(logger, "找到的适配切面："+aspectClass.toString() +"，织入范围："
-						+ (parse.isMatcherMethods() ? "所有方法" : "方法集-["+parse.getPointcutMethods()+"]") +"，by："+targetClass.toString());
+			if (parse.isMark()) {
+				DebugUtils.logFromAop(logger, "找到的适配切面: "+aspectClass.toString() +"，"
+						+ ( parse.isMatcherMethods() ? "织入所有方法" : "织入方法集: " + parse.getPointcutMethods() + "，by: "+targetClass.toString() ));
 				return true;
 			}
 		} else {
@@ -206,7 +212,7 @@ public final class PointcutExpression {
 			pointcutMatcher = this.parseResultCache.get(cacheKey);
 		}
 		
-		if (pointcutMatcher.isExpire()) {
+		if (pointcutMatcher.isMark()) {
 			if (pointcutMatcher.isMatcherMethods() || pointcutMatcher.getPointcutMethods().contains(method)) {
 				return true;
 			}

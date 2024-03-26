@@ -158,7 +158,9 @@ public final class AnnotationUtils {
 		Method[] declaredMethods = annoSource.getClass().getDeclaredMethods();
 		AnnotationValuesAttributes valuesAttributes = new AnnotationValuesAttributes();
 		for (Method method : declaredMethods) {
-			if (method.getParameterCount() > 0) {continue ;}
+			if (method.getParameterCount() > 0 || "hashCode".equals(method.getName()) || "toString".equals(method.getName())) {
+				continue ;
+			}
 			try {
 				method.setAccessible(true);
 				valuesAttributes.put(method.getName(), method.invoke(annoSource));

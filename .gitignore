@@ -1,6 +1,7 @@
+/.idea/
 /target/
 /.settings/
 /.classpath
 # 方便导入 Eclipse
 #/.project
-/fluorite-tx.iml
+/fluorite.iml

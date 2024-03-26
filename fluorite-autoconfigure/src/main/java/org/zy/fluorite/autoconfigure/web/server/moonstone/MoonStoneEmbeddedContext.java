@@ -9,21 +9,21 @@ import java.util.stream.Stream;
 import javax.servlet.ServletException;
 
 import org.zy.fluorite.web.server.exception.WebServerException;
-import org.zy.moonStone.core.container.StandardWrapper;
-import org.zy.moonStone.core.container.context.StandardContext;
-import org.zy.moonStone.core.exceptions.LifecycleException;
-import org.zy.moonStone.core.interfaces.container.Container;
-import org.zy.moonStone.core.interfaces.container.Wrapper;
-import org.zy.moonStone.core.session.ManagerBase;
-import org.zy.moonStone.core.session.interfaces.Manager;
+import org.zy.moonstone.core.container.StandardWrapper;
+import org.zy.moonstone.core.container.context.StandardContext;
+import org.zy.moonstone.core.exceptions.LifecycleException;
+import org.zy.moonstone.core.interfaces.container.Container;
+import org.zy.moonstone.core.interfaces.container.Wrapper;
+import org.zy.moonstone.core.session.ManagerBase;
+import org.zy.moonstone.core.session.interfaces.Manager;
 
 /**
  * @dateTime 2022年12月6日;
  * @author zy(azurite-Y);
- * @description MoonStone {@link StandardContext } 被 {@link MoonStoneWebServer } 用来支持延迟初始化。
+ * @description MoonStone {@link StandardContext } 被 {@link MoonstoneWebServer } 用来支持延迟初始化。
  */
-public class MoonStoneEmbeddedContext  extends StandardContext {
-	private MoonStoneStarter starter;
+public class MoonstoneEmbeddedContext extends StandardContext {
+	private MoonstoneStarter starter;
 
 	
 	@Override
@@ -74,11 +74,11 @@ public class MoonStoneEmbeddedContext  extends StandardContext {
 		return grouped.values().stream().flatMap(List::stream);
 	}
 	
-	void setStarter(MoonStoneStarter starter) {
+	void setStarter(MoonstoneStarter starter) {
 		this.starter = starter;
 	}
 
-	MoonStoneStarter getStarter() {
+	MoonstoneStarter getStarter() {
 		return this.starter;
 	}
 }

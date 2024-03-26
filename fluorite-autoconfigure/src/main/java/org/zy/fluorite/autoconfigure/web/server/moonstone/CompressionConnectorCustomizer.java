@@ -1,19 +1,19 @@
 package org.zy.fluorite.autoconfigure.web.server.moonstone;
 
 import org.zy.fluorite.autoconfigure.web.server.Compression;
-import org.zy.fluorite.autoconfigure.web.server.moonstone.interfaces.MoonStoneConnectorCustomizer;
+import org.zy.fluorite.autoconfigure.web.server.moonstone.interfaces.MoonstoneConnectorCustomizer;
 import org.zy.fluorite.core.utils.StringUtils;
-import org.zy.moonStone.core.connector.Connector;
-import org.zy.moonStone.core.http.AbstractHttp11Protocol;
-import org.zy.moonStone.core.interfaces.connector.ProtocolHandler;
+import org.zy.moonstone.core.connector.Connector;
+import org.zy.moonstone.core.http.AbstractHttp11Protocol;
+import org.zy.moonstone.core.interfaces.connector.ProtocolHandler;
 
 
 /**
  * @dateTime 2022年12月6日;
  * @author zy(azurite-Y);
- * @description 配置给定连接器上的压缩支持的 {@link MoonStoneConnectorCustomizer }。
+ * @description 配置给定连接器上的压缩支持的 {@link MoonstoneConnectorCustomizer }。
  */
-public class CompressionConnectorCustomizer implements MoonStoneConnectorCustomizer {
+public class CompressionConnectorCustomizer implements MoonstoneConnectorCustomizer {
 	private final Compression compression;
 
 	CompressionConnectorCustomizer(Compression compression) {

@@ -20,14 +20,12 @@ import org.zy.fluorite.boot.context.event.listener.EventPublishingRunListener;
 import org.zy.fluorite.boot.interfaces.Banner;
 import org.zy.fluorite.boot.interfaces.Banner.Mode;
 import org.zy.fluorite.boot.interfaces.FluoriteApplicationRunListener;
-import org.zy.fluorite.context.annotation.conditional.ConditionalOnProperty;
 import org.zy.fluorite.context.event.interfaces.ApplicationListener;
 import org.zy.fluorite.context.interfaces.ApplicationContextInitializer;
 import org.zy.fluorite.context.interfaces.ConfigurableApplicationContext;
 import org.zy.fluorite.context.support.AbstractApplicationContext;
 import org.zy.fluorite.context.support.AnnotationBeanNameGenerator;
 import org.zy.fluorite.context.support.ConfigurationClassPostProcessor;
-import org.zy.fluorite.context.support.DefaultListableBeanFactory;
 import org.zy.fluorite.core.convert.ResolvableType;
 import org.zy.fluorite.core.environment.FactoriesProperty;
 import org.zy.fluorite.core.environment.interfaces.ConfigurableEnvironment;
@@ -304,31 +302,5 @@ public class FluoriteApplication {
 
 		}
 		return Collections.unmodifiableList(this.listeners);
-	}
-	
-	/**
-	 * ApplicationContextInitializedEvent
-	 * ConfigurationClassBeanDefinitionReader
-	 * ConfigurationClassPostProcessor
-	 * {@link AbstractApplicationContext#refresh()}
-	 * {@link DefaultListableBeanFactory}
-	 * 
-	 * AutowiredAnnotationBeanPostProcessor
-	 * CommonAnnotationBeanPostProcessor
-	 * 
-	 * ApplicationContextAwareProcessor
-	 * ApplicationListenerDetector
-     * WebApplicationContextServletContextAwareProcessor
-     * ApplicationListenerDetector
-	 * @param args
-	 */
-	public static void main(String[] args) {
-//		FluoriteApplication.run(FluoriteApplication.class, args);
-//		ResolvableType[] generics = ResolvableType.forClass(FluoriteApplication.class).getGenerics();
-//		System.out.println(generics == null); 
-//		System.out.println(generics.length);
-		ConditionalOnProperty annotation = FluoriteApplication.class.getAnnotation(ConditionalOnProperty.class);
-		String[] value = annotation.value();
-		System.out.println(value.length);
 	}
 }

@@ -3,7 +3,6 @@ package org.zy.fluorite.autoconfigure.web.servlet;
 import java.util.Collection;
 import java.util.EventListener;
 
-import javax.servlet.Filter;
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -196,7 +195,7 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 	
 	/**
 	 * 用给定的完全加载的 {@link ServletContext} 准备 {@link WebApplicationContext} 。
-	 * 这个方法通常从 {@link ServletContextInitializer#onStartup(ServletContext)} 调用，类似于通常由 {@link ContextLoaderListener} 提供的功能。
+	 * 这个方法通常从 {@link ServletContextInitializer#onStartup(ServletContext)} 调用。
 	 * 
 	 * @param servletContext - 待操作的servlet上下文
 	 */
@@ -230,7 +229,7 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 	
 	/**
 	 * 返回应与嵌入式Web服务器一起使用的 {@link ServletContextInitializer}s 。
-	 * 默认情况下，此方法将首先尝试查找 {@link ServletContextInitializer}、{@link Servlet}、{@link Filter}和某些{@link EventListener} bean。
+	 * 默认情况下，此方法将首先尝试查找 {@link ServletContextInitializer}、{@link Servlet}、{@link }和某些{@link EventListener} bean。
 	 * 
 	 * @return servlet初始化器bean
 	 */

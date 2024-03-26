@@ -38,7 +38,7 @@ public class ClassAnnotationPointcutExpressionParse implements PointcutExpressio
 		
 		// 判断目标类是否标注指定注解
 		if (targetClass.isAnnotationPresent(anoClz)) {
-			pointcutMatcher.setExpire(true);
+			pointcutMatcher.setMark(true);
 			pointcutMatcher.setMatcherMethods(true);
 		}
 		return pointcutMatcher;

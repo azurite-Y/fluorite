@@ -7,10 +7,11 @@ import javax.servlet.MultipartConfigElement;
 
 import org.zy.fluorite.autoconfigure.web.ServerProperties;
 import org.zy.fluorite.autoconfigure.web.server.interfaces.ConfigurableWebServerFactory;
-import org.zy.moonStone.core.connector.Connector;
-import org.zy.moonStone.core.interfaces.container.Context;
-import org.zy.moonStone.core.interfaces.container.Engine;
-import org.zy.moonStone.core.interfaces.container.Valve;
+import org.zy.moonstone.core.connector.Connector;
+import org.zy.moonstone.core.interfaces.container.Context;
+import org.zy.moonstone.core.interfaces.container.Engine;
+import org.zy.moonstone.core.interfaces.container.Valve;
+import org.zy.moonstone.core.startup.Moonstone;
 
 
 /**
@@ -24,7 +25,7 @@ public interface ConfigurableMoonStoneWebServerFactory extends ConfigurableWebSe
 	 */
 	void setBaseDirectory(File baseDirectory);
 	
-	/** 设置使用临时目录作为 {@link ServerProperties.MoonStone#basedir } */
+	/** 设置使用临时目录作为 {@link Moonstone#basedir } */
 	void setUseTempBaseDir(boolean useTempBaseDir);
 	
 	/** 设置应用程序加载根目录，若使用的是相对目录则相对于 {@link ServerProperties.MoonStone#basedir } */
@@ -56,21 +57,21 @@ public interface ConfigurableMoonStoneWebServerFactory extends ConfigurableWebSe
 	void addContextValves(Valve... contextValves);
 	
 	/**
-	 * 添加应用于 {@link Connector} 的 {@link MoonStoneConnectorCustomizer}
+	 * 添加应用于 {@link Connector} 的 {@link MoonstoneConnectorCustomizer}
 	 * @param tomcatConnectorCustomizers
 	 */
-	void addConnectorCustomizers(MoonStoneConnectorCustomizer... tomcatConnectorCustomizers);
+	void addConnectorCustomizers(MoonstoneConnectorCustomizer... tomcatConnectorCustomizers);
 
 	/**
-	 * 添加应用于 {@link Context} 的 {@link MoonStoneContextCustomizer}
+	 * 添加应用于 {@link Context} 的 {@link MoonstoneContextCustomizer}
 	 * @param tomcatContextCustomizers
 	 */
-	void addContextCustomizers(MoonStoneContextCustomizer... tomcatContextCustomizers);
+	void addContextCustomizers(MoonstoneContextCustomizer... tomcatContextCustomizers);
 
 	/**
-	 * 添加应用于 {@link Connector} 的 {@link MoonStoneProtocolHandlerCustomizer}
+	 * 添加应用于 {@link Connector} 的 {@link MoonstoneProtocolHandlerCustomizer}
 	 */
-	void addProtocolHandlerCustomizers(MoonStoneProtocolHandlerCustomizer<?>... tomcatProtocolHandlerCustomizers);
+	void addProtocolHandlerCustomizers(MoonstoneProtocolHandlerCustomizer<?>... tomcatProtocolHandlerCustomizers);
 
 	/**
 	 * 设置用于URL解码的字符编码。如果没有指定，将使用'UTF-8'。
