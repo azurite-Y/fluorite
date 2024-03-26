@@ -15,9 +15,9 @@ public class App {
 ```
 ## 二、测试项目地址
 
-1. 框架测试项目地址：https://gitee.com/azurite_y/FluoriteTest<br/>
-2. 事务测试项目地址：https://gitee.com/azurite_y/DichroiteTest<br/>
-3. 内镶 Servlet 容器测试项目地址：[https://gitee.com/azurite_y/MoonstoneTest](https://gitee.com/azurite_y/MoonstoneTest)
+1. 框架测试项目地址：[fluorite-test](https://gitee.com/azurite_y/fluorite-test)<br/>
+2. 事务测试项目地址：[dichroite-test](https://gitee.com/azurite_y/dichroite-test)<br/>
+3. 内镶 Servlet 容器测试项目地址：[moonstone-test](https://gitee.com/azurite_y/moonstone-test)
 
 ## 三、原理概述
 
