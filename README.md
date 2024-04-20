@@ -49,7 +49,7 @@ public class App {
 | @ConditionalOnResource        | 只有类加载路径下有指定资源时组件才有资格注册                 |
 | @ConditionalOnSingleCandidate | 只有容器中存在指定 Bean 且可以确定单个候选时组件才有资格注册 |
 
-> @ConditionalOnClass 与 @ConditionalOnMissingClass 的实现逻辑是建立在 Maven 中的可选依赖功能上的。根据是否拥有某个依赖项中所提供的类而做到引入依赖项而使判断特定于此依赖项的相关配置生效与否。
+> @ConditionalOnClass 与 @ConditionalOnMissingClass 的实现逻辑是建立在 Maven 中的可选依赖功能上的。根据是否拥有某个依赖项中所提供的类而做到通过依赖项的引入与否来判断特定于此依赖项的相关配置是否生效。
 >
 
 > @ConditionalOnClass 与 @ConditionalOnMissingClass 注解的 value 方法 BUG 问题：可编译通过，但在缺少指定类的环境下运行时，获取此注解会导致 ArrayStoreException 异常，其本质还是一个 ClassNotFound 异常。目前尚为解决。
@@ -61,7 +61,7 @@ public class App {
 2. 提供 AutowiredAnnotationBeanPostProcessor 和 CommonAnnotationBeanPostProcessor 进行自动注入。
 3. 支持使用 @ConfigurationProperties 注解对配置文件进行解析。
 
-### <font face="宋体" color=#7030A0>5、APO</font>
+### <font face="宋体" color=#7030A0>5、AOP</font>
 
 1. 对于 AOP 来说，实现了 Cglib 和 JDK 动态代理。
 
